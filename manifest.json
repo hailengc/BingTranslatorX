@@ -1,14 +1,14 @@
 {
-  "name": "Getting Started Example",
+  "name": "BingTranslator",
   "version": "1.0",
-  "description": "Build an Extension!",
+  "description": "A translator use Bing dict.",
   "permissions": ["activeTab", "declarativeContent", "storage"],
   "options_page": "options.html",
   "background": {
     "scripts": ["background.js"],
     "persistent": false
   },
-  "page_action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Change background color",
     "default_icon": {
