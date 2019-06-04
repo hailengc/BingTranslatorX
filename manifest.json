@@ -27,7 +27,7 @@
 
   "content_scripts": [
     {
-      "js": ["content/contentScript.js"],
+      "js": ["lib/axios.min.js", "content/contentScript.js"],
       "matches": ["<all_urls>"],
       "run_at": "document_start"
     }

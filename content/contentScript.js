@@ -3,6 +3,7 @@ document.addEventListener("click", (doc, event) => {
   if (p1) {
     p1.style.backgroundColor = "red";
   }
+
   const extensionContent = document.querySelector(".extension-content");
   if (extensionContent) {
     const insert = document.createElement("p");
