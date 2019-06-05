@@ -23,8 +23,14 @@ chrome.runtime.onInstalled.addListener(function() {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.greeting === "hello") {
-    console.log("receiving a greeting message.");
-    sendResponse({ farewell: "goodbye" });
+  if (request.action === "query") {
+    axios
+      .get("https://cn.bing.com/dict/search?mkt=zh-cn&q=" + request.queryString)
+      .then(res => {
+        sendResponse(res.data);
+      });
+
+    // send response async
+    return true;
   }
 });

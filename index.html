@@ -66,47 +66,10 @@
     <h1>This is the title</h1>
     <div class="page-content">
       <p id="p1">
-        Hello, this is paragraph one.
+        Hello, this is paragraph one. apple, apples, having, moved.
       </p>
     </div>
 
     <div class="extension-content"></div>
   </body>
-
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-  <script>
-    function removeNodeBySelectors(parentNode, selectorList) {
-      selectorList.forEach(selector => {
-        const node = parentNode.querySelector(selector);
-        node && node.remove();
-      });
-    }
-
-    const corsBase = "https://cors-anywhere.herokuapp.com/";
-    axios
-      .get(corsBase + "https://cn.bing.com/dict/search?mkt=zh-cn&q=casual")
-      .then(res => {
-        console.log(res);
-
-        const domParser = new DOMParser();
-        var queryDoc = domParser.parseFromString(res.data, "text/html");
-
-        console.log(queryDoc);
-
-        const queryContentNode = queryDoc.querySelector(".qdef");
-        console.log(queryContentNode);
-        removeNodeBySelectors(queryContentNode, [
-          ".hd_div1",
-          ".img_area",
-          ".wd_div",
-          ".df_div"
-        ]);
-
-        const extensionContent = document.querySelector(".extension-content");
-        if (extensionContent) {
-          extensionContent.appendChild(queryContentNode);
-        }
-      });
-  </script>
 </html>
