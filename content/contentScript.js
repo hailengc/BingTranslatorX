@@ -1,3 +1,5 @@
+const EXT_BT_SELECTOR = ".__EXT_BT__";
+
 function removeNodeBySelectors(parentNode, selectorList) {
   selectorList.forEach(selector => {
     const node = parentNode.querySelector(selector);
@@ -26,6 +28,17 @@ function inRect(rect, x, y) {
   return rect.left <= x && rect.right >= x && rect.top <= y && rect.bottom >= y;
 }
 
+function showExtensionContainer() {
+  const extContainer = document.querySelector(EXT_BT_SELECTOR);
+  extContainer.style.display = "block";
+}
+
+function hideExtensionContainer() {
+  const extContainer = document.querySelector(EXT_BT_SELECTOR);
+  extContainer.style.display = "none";
+  currentQueryString = "";
+}
+
 function queryAndShow(queryString, targetClientRect) {
   if (!shouldDoQuery(queryString)) {
     return;
@@ -47,22 +60,36 @@ function queryAndShow(queryString, targetClientRect) {
       ".df_div"
     ]);
 
-    const extensionContent = document.querySelector(".__EXT_BT__");
+    const extensionContent = document.querySelector(EXT_BT_SELECTOR);
     if (extensionContent) {
       if (extensionContent.firstChild) {
         extensionContent.removeChild(extensionContent.firstChild);
       }
+      showExtensionContainer();
       extensionContent.appendChild(queryContentNode);
       // extensionContent.style.left = targetClientRect.left + "px";
-      extensionContent.style.top = targetClientRect.bottom + "px";
+      // extensionContent.style.top = targetClientRect.bottom + "px";
 
       const docWidth = document.body.clientWidth;
+      const windowHeight = window.innerHeight;
       const extWidth = extensionContent.clientWidth;
-      const offset = targetClientRect.left + extWidth - docWidth;
-      if (offset > 0) {
-        extensionContent.style.left = targetClientRect.left - offset + "px";
+      const extHeight = extensionContent.clientHeight;
+
+      const horizontalOffset = targetClientRect.left + extWidth - docWidth;
+      if (horizontalOffset > 0) {
+        console.log(".... horizontalOffset " + horizontalOffset);
+        extensionContent.style.left =
+          targetClientRect.left - horizontalOffset + "px";
       } else {
         extensionContent.style.left = targetClientRect.left + "px";
+      }
+
+      const verticalOffset = targetClientRect.bottom + extHeight - windowHeight;
+      if (verticalOffset > 0) {
+        extensionContent.style.top = targetClientRect.top - extHeight + "px";
+        console.log(" ... vertial offset ..." + verticalOffset);
+      } else {
+        extensionContent.style.top = targetClientRect.bottom + "px";
       }
     }
   });
@@ -80,6 +107,8 @@ document.addEventListener("mouseup", event => {
 
     if (selectedString) {
       queryAndShow(selectedString, getSeletionCR(sel));
+    } else {
+      hideExtensionContainer();
     }
   }
 
@@ -129,7 +158,11 @@ document.addEventListener("mousemove", event => {
       const qstr = selection.toString().trim();
       if (qstr) {
         queryAndShow(qstr, getSeletionCR(selection));
+      } else {
+        hideExtensionContainer();
       }
+    } else {
+      hideExtensionContainer();
     }
 
     selection.empty();
