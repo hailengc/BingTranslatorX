@@ -1,4 +1,7 @@
 .__EXT_BT__ {
   background-color: skyblue;
-  width: 200px;
+  min-width: 100px;
+  border: 1px solid grey;
+  position: fixed;
+  z-index: 999999;
 }

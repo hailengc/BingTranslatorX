@@ -9,7 +9,24 @@ function shouldDoQuery(queryString) {
   return queryString !== currentQueryString;
 }
 
-function doQuery(queryString) {
+function isStringValid(str) {
+  return str !== null && str.length > 0;
+}
+
+// get selection's range client rect
+function getSeletionCR(selection) {
+  return selection.getRangeAt(0).getBoundingClientRect();
+}
+
+function hasValidSelection() {
+  return isStringValid(window.getSelection().toString());
+}
+
+function inRect(rect, x, y) {
+  return rect.left <= x && rect.right >= x && rect.top <= y && rect.bottom >= y;
+}
+
+function queryAndShow(queryString, targetClientRect) {
   if (!shouldDoQuery(queryString)) {
     return;
   }
@@ -36,27 +53,54 @@ function doQuery(queryString) {
         extensionContent.removeChild(extensionContent.firstChild);
       }
       extensionContent.appendChild(queryContentNode);
-      isShowing = true;
+      // extensionContent.style.left = targetClientRect.left + "px";
+      extensionContent.style.top = targetClientRect.bottom + "px";
+
+      const docWidth = document.body.clientWidth;
+      const extWidth = extensionContent.clientWidth;
+      const offset = targetClientRect.left + extWidth - docWidth;
+      if (offset > 0) {
+        extensionContent.style.left = targetClientRect.left - offset + "px";
+      } else {
+        extensionContent.style.left = targetClientRect.left + "px";
+      }
     }
   });
 }
 
-let selectedString = null,
-  currentQueryString = null;
-let isShowing = false;
+let currentQueryString = null,
+  isSelecting = false;
 
 document.addEventListener("mouseup", event => {
-  if (selectedString) {
-    doQuery(selectedString);
+  console.log("... mouseup...");
+
+  if (isSelecting) {
+    const sel = window.getSelection();
+    const selectedString = sel.toString().trim();
+
+    if (selectedString) {
+      queryAndShow(selectedString, getSeletionCR(sel));
+    }
   }
+
+  isSelecting = false;
 });
 
-document.addEventListener("selectionchange", event => {
-  const selection = document.getSelection();
-  selectedString = selection.toString().trim();
+document.addEventListener("selectstart", event => {
+  console.log(".... selection start ...");
+  isSelecting = true;
 });
+
+document.addEventListener("selectionchange", event => {});
 
 document.addEventListener("mousemove", event => {
+  if (isSelecting || hasValidSelection()) {
+    console.log("... sking hovering query...");
+    return;
+  }
+
+  console.log("... mouse moving ...");
+
   let range = null,
     textNode = null;
 
@@ -78,12 +122,16 @@ document.addEventListener("mousemove", event => {
     selection.addRange(range);
     selection.modify("move", "backward", "word");
     selection.modify("extend", "forward", "word");
-    console.log(selection.toString().trim());
-    const qstr = selection.toString().trim();
-    if (qstr) {
-      doQuery(qstr);
+    const slectionRange = selection.getRangeAt(0);
+    const rect = slectionRange.getBoundingClientRect();
+
+    if (inRect(rect, event.clientX, event.clientY)) {
+      const qstr = selection.toString().trim();
+      if (qstr) {
+        queryAndShow(qstr, getSeletionCR(selection));
+      }
     }
-    range.detach();
+
     selection.empty();
   }
 });
