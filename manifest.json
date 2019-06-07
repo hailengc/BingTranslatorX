@@ -27,7 +27,12 @@
 
   "content_scripts": [
     {
-      "js": ["lib/axios.min.js", "content/init.js", "content/contentScript.js"],
+      "js": [
+        "lib/axios.min.js",
+        "lib/BingDictConverter.js",
+        "content/init.js",
+        "content/contentScript.js"
+      ],
       "css": ["content/style.css"],
       "matches": ["<all_urls>"],
       "run_at": "document_end"
