@@ -1,19 +1,6 @@
 const EXT_BT_SELECTOR = ".__EXT_BT__";
 
-function removeNodeBySelectors(parentNode, selectorList) {
-  selectorList.forEach(selector => {
-    const node = parentNode.querySelector(selector);
-    node && node.remove();
-  });
-}
 
-function shouldDoQuery(queryString) {
-  return queryString !== currentQueryString;
-}
-
-function isStringValid(str) {
-  return str !== null && str.length > 0;
-}
 
 // get selection's range client rect
 function getSeletionCR(selection) {
@@ -22,10 +9,6 @@ function getSeletionCR(selection) {
 
 function hasValidSelection() {
   return isStringValid(window.getSelection().toString());
-}
-
-function inRect(rect, x, y) {
-  return rect.left <= x && rect.right >= x && rect.top <= y && rect.bottom >= y;
 }
 
 function showExtensionContainer() {
@@ -91,52 +74,6 @@ function queryAndShow(queryString, targetClientRect) {
       }
     }
   });
-}
-
-class HoveringTarget {
-  static createNullTarget() {
-    return new HoveringTarget("", null);
-  }
-
-  constructor(targetString, targetClientRect) {
-    this.targetString = targetString;
-    this.targetClientRect = targetClientRect;
-    this.createdTime = Date.now();
-  }
-
-  _isRectEqual(rect1, rect2) {
-    if (rect1 == null || rect2 == null) {
-      return false;
-    }
-
-    return (
-      rect1.left == rect2.left &&
-      rect1.right == rect2.right &&
-      rect1.top == rect2.top &&
-      rect1.bottom == rect2.bottom
-    );
-  }
-
-  equalTo(ht) {
-    return (
-      this.isValid &&
-      this.targetString === ht.targetString &&
-      this._isRectEqual(this.targetClientRect, ht.targetClientRect)
-    );
-  }
-
-  get isValid() {
-    return isStringValid(this.targetString) && this.targetClientRect !== null;
-  }
-
-  get livingTime() {
-    return Date.now() - this.createdTime;
-  }
-
-  toString() {
-    return `${this.targetString} time: ${this.createdTime}, rect: ${this
-      .targetClientRect && this.targetClientRect.toString()}`;
-  }
 }
 
 function getHoveringTarget() {
