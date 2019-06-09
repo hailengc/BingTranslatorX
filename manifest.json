@@ -30,7 +30,7 @@
       "js": [
         "lib/external/axios.min.js",
         "lib/util.js",
-        "lib/HoveringTarget.js",
+        "lib/QueryTarget.js",
         "lib/BingDictConverter.js",
         "content/init.js",
         "content/contentScript.js"

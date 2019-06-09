@@ -1,8 +1,8 @@
-const EXT_BT_SELECTOR = ".__EXT_BT__";
+const rootSelector = ".__EXT_BT_ROOT__";
+const containerSelector = ".__EXT_BT_CONTAINER__";
+const loadingSelector = ".__EXT_BT_LOADING__";
 
-
-
-// get selection's range client rect
+// get selection range client rect
 function getSeletionCR(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
 }
@@ -11,23 +11,39 @@ function hasValidSelection() {
   return isStringValid(window.getSelection().toString());
 }
 
-function showExtensionContainer() {
-  const extContainer = document.querySelector(EXT_BT_SELECTOR);
-  extContainer.style.display = "block";
+function isContainerShowing() {
+  const extContainer = document.querySelector(containerSelector);
+  return extContainer.style.display !== "none";
 }
 
-function hideExtensionContainer() {
-  const extContainer = document.querySelector(EXT_BT_SELECTOR);
-  extContainer.style.display = "none";
-  currentQueryString = "";
+function showRoot() {
+  showElement(rootSelector);
 }
 
-function queryAndShow(queryString, targetClientRect) {
-  if (!shouldDoQuery(queryString)) {
+function hideRoot() {
+  hideElement(rootSelector);
+}
+
+function showLoading() {
+  showElement(loadingSelector);
+  hideElement(containerSelector);
+  showRoot();
+}
+
+function showContainer() {
+  showElement(containerSelector);
+  hideElement(loadingSelector);
+  showRoot();
+}
+
+function queryAndShow(queryTarget) {
+  if (queryTarget.isActive) {
     return;
   }
 
-  currentQueryString = queryString;
+  queryTarget.isActive = true;
+  const queryString = queryTarget.targetString;
+  const targetClientRect = queryTarget.targetClientRect;
   chrome.runtime.sendMessage({ action: "query", queryString }, htmlString => {
     const domParser = new DOMParser();
     const queryDom = domParser.parseFromString(htmlString, "text/html");
@@ -43,12 +59,12 @@ function queryAndShow(queryString, targetClientRect) {
       ".df_div"
     ]);
 
-    const extensionContent = document.querySelector(EXT_BT_SELECTOR);
+    const extensionContent = document.querySelector(containerSelector);
     if (extensionContent) {
       if (extensionContent.firstChild) {
         extensionContent.removeChild(extensionContent.firstChild);
       }
-      showExtensionContainer();
+      showContainer();
       extensionContent.appendChild(queryContentNode);
       // extensionContent.style.left = targetClientRect.left + "px";
       // extensionContent.style.top = targetClientRect.bottom + "px";
@@ -76,7 +92,7 @@ function queryAndShow(queryString, targetClientRect) {
   });
 }
 
-function getHoveringTarget() {
+function getQueryTargetByHovering() {
   let range = null,
     textNode = null;
 
@@ -92,29 +108,33 @@ function getHoveringTarget() {
     }
   }
 
-  let hoveringTarget = HoveringTarget.createNullTarget();
+  let queryTarget = QueryTarget.createNullTarget();
   if (textNode && textNode.nodeType == 3) {
     const selection = window.getSelection();
     selection.empty();
     selection.addRange(range);
     selection.modify("move", "backward", "word");
+    selection.collapseToStart();
     selection.modify("extend", "forward", "word");
     const slectionRange = selection.getRangeAt(0);
     const rect = slectionRange.getBoundingClientRect();
 
     const qstr = selection.toString().trim();
     if (qstr && inRect(rect, event.clientX, event.clientY)) {
-      hoveringTarget = new HoveringTarget(qstr, getSeletionCR(selection));
+      queryTarget = new QueryTarget(qstr, getSeletionCR(selection));
     }
     selection.empty();
   }
 
-  return hoveringTarget;
+  return queryTarget;
 }
 
-let currentQueryString = null,
-  isSelecting = false,
-  lastHoveringTarget = HoveringTarget.createNullTarget();
+let isSelecting = false,
+  lastQueryTarget = QueryTarget.createNullTarget();
+
+document.addEventListener("selectstart", event => {
+  isSelecting = true;
+});
 
 document.addEventListener("mouseup", event => {
   console.log("... mouseup...");
@@ -125,17 +145,13 @@ document.addEventListener("mouseup", event => {
 
     if (selectedString) {
       // queryAndShow(selectedString, getSeletionCR(sel));
+      lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
     } else {
-      hideExtensionContainer();
+      lastQueryTarget = QueryTarget.createNullTarget();
     }
   }
 
   isSelecting = false;
-});
-
-document.addEventListener("selectstart", event => {
-  console.log(".... selection start ...");
-  isSelecting = true;
 });
 
 document.addEventListener("selectionchange", event => {});
@@ -146,31 +162,43 @@ document.addEventListener("mousemove", event => {
     return;
   }
 
-  const hoveringTarget = getHoveringTarget();
+  const queryTarget = getQueryTargetByHovering();
 
-  if (!hoveringTarget.equalTo(lastHoveringTarget)) {
+  if (!queryTarget.equalTo(lastQueryTarget)) {
     // update hovering target
-    lastHoveringTarget = hoveringTarget;
+    lastQueryTarget = queryTarget;
   }
-
-  // if (lastHoveringTarget !== null) {
-  //   // queryAndShow(
-  //   //   lastHoveringTarget.targetString,
-  //   //   lastHoveringTarget.targetClientRect
-  //   // );
-  // } else {
-  //   // hideExtensionContainer();
-  // }
 });
 
 const CHECK_INTERVAL = 20;
 const VALID_HOVERING_TIME = 300;
+let queryTargetDetectInterval = null;
 
-setInterval(() => {
-  if (
-    lastHoveringTarget.isValid &&
-    lastHoveringTarget.livingTime >= VALID_HOVERING_TIME
-  ) {
-    console.log(lastHoveringTarget.toString());
-  }
-}, CHECK_INTERVAL);
+function enableQueryTargetDetect() {
+  queryTargetDetectInterval =
+    queryTargetDetectInterval ||
+    setInterval(() => {
+      if (isSelecting) {
+        // do nothing while selecting
+        return;
+      } else if (hasValidSelection()) {
+        queryAndShow(lastQueryTarget);
+      } else {
+        if (
+          lastQueryTarget.isValid &&
+          lastQueryTarget.livingTime >= VALID_HOVERING_TIME
+        ) {
+          queryAndShow(lastQueryTarget);
+        } else {
+          hideRoot();
+        }
+      }
+    }, CHECK_INTERVAL);
+}
+
+function disableQueryTargetDetect() {
+  window.clearInterval(queryTargetDetectInterval);
+  queryTargetDetectInterval = null;
+}
+
+enableQueryTargetDetect();
