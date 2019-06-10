@@ -1,14 +1,12 @@
-const extRootElement = document.createElement("div");
-extRootElement.classList.add("__EXT_BT_ROOT__");
+const template = `
+<div class="__EXT_BT_ROOT__" style="display: none">
+  <div class="__EXT_BT_CONTAINER__" style="display: none;"></div>
+  <div class="__EXT_BT_LOADING__" style="display: none">
+    <img src="${chrome.runtime.getURL("images/loading.svg")}" />
+  </div>
+</div>`;
 
-const containerDomElement = document.createElement("div");
-containerDomElement.classList.add("__EXT_BT_CONTAINER__");
-containerDomElement.style.display = "none";
-extRootElement.appendChild(containerDomElement);
+const domParser = new DOMParser();
+const templateDom = domParser.parseFromString(template, "text/html");
 
-const loadingDomElement = document.createElement("div");
-loadingDomElement.classList.add("__EXT_BT_LOADING__");
-loadingDomElement.style.display = "none";
-extRootElement.appendChild(loadingDomElement);
-
-document.body.appendChild(extRootElement);
+document.body.appendChild(templateDom.body.firstChild);

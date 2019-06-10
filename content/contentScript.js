@@ -24,16 +24,44 @@ function hideRoot() {
   hideElement(rootSelector);
 }
 
-function showLoading() {
+function showLoading(targetClientRect = null) {
   showElement(loadingSelector);
+  if (targetClientRect) {
+    adjustPostion(loadingSelector, targetClientRect);
+  }
   hideElement(containerSelector);
   showRoot();
 }
 
-function showContainer() {
+function showContainer(targetClientRect = null) {
   showElement(containerSelector);
+  if (targetClientRect) {
+    adjustPostion(containerSelector, targetClientRect);
+  }
   hideElement(loadingSelector);
   showRoot();
+}
+
+function adjustPostion(selector, targetClientRect) {
+  const element = document.querySelector(selector);
+  const docWidth = document.body.clientWidth;
+  const windowHeight = window.innerHeight;
+  const extWidth = element.clientWidth;
+  const extHeight = element.clientHeight;
+
+  const horizontalOffset = targetClientRect.left + extWidth - docWidth;
+  if (horizontalOffset > 0) {
+    element.style.left = targetClientRect.left - horizontalOffset + "px";
+  } else {
+    element.style.left = targetClientRect.left + "px";
+  }
+
+  const verticalOffset = targetClientRect.bottom + extHeight - windowHeight;
+  if (verticalOffset > 0) {
+    element.style.top = targetClientRect.top - extHeight + "px";
+  } else {
+    element.style.top = targetClientRect.bottom + "px";
+  }
 }
 
 function queryAndShow(queryTarget) {
@@ -44,6 +72,7 @@ function queryAndShow(queryTarget) {
   queryTarget.isActive = true;
   const queryString = queryTarget.targetString;
   const targetClientRect = queryTarget.targetClientRect;
+  showLoading(targetClientRect);
   chrome.runtime.sendMessage({ action: "query", queryString }, htmlString => {
     const domParser = new DOMParser();
     const queryDom = domParser.parseFromString(htmlString, "text/html");
@@ -64,30 +93,8 @@ function queryAndShow(queryTarget) {
       if (extensionContent.firstChild) {
         extensionContent.removeChild(extensionContent.firstChild);
       }
-      showContainer();
       extensionContent.appendChild(queryContentNode);
-      // extensionContent.style.left = targetClientRect.left + "px";
-      // extensionContent.style.top = targetClientRect.bottom + "px";
-
-      const docWidth = document.body.clientWidth;
-      const windowHeight = window.innerHeight;
-      const extWidth = extensionContent.clientWidth;
-      const extHeight = extensionContent.clientHeight;
-
-      const horizontalOffset = targetClientRect.left + extWidth - docWidth;
-      if (horizontalOffset > 0) {
-        extensionContent.style.left =
-          targetClientRect.left - horizontalOffset + "px";
-      } else {
-        extensionContent.style.left = targetClientRect.left + "px";
-      }
-
-      const verticalOffset = targetClientRect.bottom + extHeight - windowHeight;
-      if (verticalOffset > 0) {
-        extensionContent.style.top = targetClientRect.top - extHeight + "px";
-      } else {
-        extensionContent.style.top = targetClientRect.bottom + "px";
-      }
+      showContainer(targetClientRect);
     }
   });
 }

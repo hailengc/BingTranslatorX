@@ -5,3 +5,8 @@
   position: fixed;
   z-index: 999999;
 }
+
+.__EXT_BT_LOADING__ {
+  position: fixed;
+  z-index: 999999;
+}
