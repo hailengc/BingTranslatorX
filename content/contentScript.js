@@ -19,29 +19,28 @@ function showRoot() {
   showElement(rootSelector);
 }
 
-function hideRoot() {
-  hideElement(rootSelector);
+function hideAll() {
+  hideElement(containerSelector);
+  hideElement(loadingSelector);
 }
 
 function showLoading(targetClientRect = null) {
+  hideElement(containerSelector);
   showElement(loadingSelector);
   if (targetClientRect) {
-    adjustPostion(loadingSelector, targetClientRect);
+    adjustPosition(loadingSelector, targetClientRect);
   }
-  hideElement(containerSelector);
-  showRoot();
 }
 
 function showContainer(targetClientRect = null) {
+  hideElement(loadingSelector);
   showElement(containerSelector);
   if (targetClientRect) {
-    adjustPostion(containerSelector, targetClientRect);
+    adjustPosition(containerSelector, targetClientRect);
   }
-  hideElement(loadingSelector);
-  showRoot();
 }
 
-function adjustPostion(selector, targetClientRect) {
+function adjustPosition(selector, targetClientRect) {
   const element = document.querySelector(selector);
   const docWidth = document.body.clientWidth;
   const windowHeight = window.innerHeight;
@@ -142,9 +141,8 @@ function getQueryTargetByHovering() {
     const selection = window.getSelection();
     selection.empty();
     selection.addRange(range);
-    selection.modify("move", "backward", "word");
-    selection.collapseToStart();
-    selection.modify("extend", "forward", "word");
+    selection.modify("move", "forward", "word");
+    selection.modify("extend", "backward", "word");
     const slectionRange = selection.getRangeAt(0);
     const rect = slectionRange.getBoundingClientRect();
 
@@ -181,20 +179,20 @@ document.addEventListener("mouseup", event => {
   isSelecting = false;
 });
 
-document.addEventListener("selectionchange", event => {});
+// document.addEventListener("selectionchange", event => {});
 
-document.addEventListener("mousemove", event => {
+function updateQueryTarget(event) {
   if (isSelecting || hasValidSelection()) {
     return;
   }
-
   const queryTarget = getQueryTargetByHovering();
-
   if (!queryTarget.equalTo(lastQueryTarget)) {
-    // update hovering target
     lastQueryTarget = queryTarget;
   }
-});
+}
+
+document.addEventListener("scroll", updateQueryTarget);
+document.addEventListener("mousemove", updateQueryTarget);
 
 const CHECK_INTERVAL = 20;
 const VALID_HOVERING_TIME = 300;
@@ -216,7 +214,7 @@ function enableQueryTargetDetect() {
         ) {
           queryAndShow(lastQueryTarget);
         } else {
-          hideRoot();
+          hideAll();
         }
       }
     }, CHECK_INTERVAL);

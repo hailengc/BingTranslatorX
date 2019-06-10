@@ -1,10 +1,10 @@
 const template = `
-<div class="__EXT_BT_ROOT__" style="display: none">
+<div class="__EXT_BT_ROOT__" style="display: block">
   <div class="__EXT_BT_CONTAINER__" style="display: none;"></div>
-  <div class="__EXT_BT_LOADING__" style="display: none">
+  <div class="__EXT_BT_LOADING__" style="display: none;">
     <img src="${chrome.runtime.getURL(
       "images/loading.svg"
-    )}" style="height: 30px;" />
+    )}"  style="height: 30px;" />
   </div>
 </div>`;
 
