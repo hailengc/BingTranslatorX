@@ -2,7 +2,6 @@ const rootSelector = ".__EXT_BT_ROOT__";
 const containerSelector = ".__EXT_BT_CONTAINER__";
 const loadingSelector = ".__EXT_BT_LOADING__";
 
-// get selection range client rect
 function getSeletionCR(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
 }
@@ -64,6 +63,37 @@ function adjustPostion(selector, targetClientRect) {
   }
 }
 
+function updateContainerContent(childContent) {
+  let result = false;
+  const container = document.querySelector(containerSelector);
+  if (container) {
+    if (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    container.appendChild(childContent);
+    result = true;
+  }
+
+  return result;
+}
+
+function convertFromHTMLContent(htmlString) {
+  const domParser = new DOMParser();
+  const queryDom = domParser.parseFromString(htmlString, "text/html");
+  const reuslt = queryDom.querySelector(".qdef");
+  if (!reuslt) {
+    return null;
+  } else {
+    removeNodeBySelectors(reuslt, [
+      ".hd_div1",
+      ".img_area",
+      ".wd_div",
+      ".df_div"
+    ]);
+    return reuslt;
+  }
+}
+
 function queryAndShow(queryTarget) {
   if (queryTarget.isActive) {
     return;
@@ -73,30 +103,22 @@ function queryAndShow(queryTarget) {
   const queryString = queryTarget.targetString;
   const targetClientRect = queryTarget.targetClientRect;
   showLoading(targetClientRect);
-  chrome.runtime.sendMessage({ action: "query", queryString }, htmlString => {
-    const domParser = new DOMParser();
-    const queryDom = domParser.parseFromString(htmlString, "text/html");
-    const queryContentNode = queryDom.querySelector(".qdef");
-    if (!queryContentNode) {
-      return;
-    }
 
-    removeNodeBySelectors(queryContentNode, [
-      ".hd_div1",
-      ".img_area",
-      ".wd_div",
-      ".df_div"
-    ]);
-
-    const extensionContent = document.querySelector(containerSelector);
-    if (extensionContent) {
-      if (extensionContent.firstChild) {
-        extensionContent.removeChild(extensionContent.firstChild);
+  chrome.runtime.sendMessage(
+    { action: "query", queryString, queryTarget },
+    response => {
+      const htmlString = response.data;
+      const queryResult = convertFromHTMLContent(htmlString);
+      if (queryResult && updateContainerContent(queryResult)) {
+        if (queryTarget.equalTo(lastQueryTarget)) {
+          // check if is still the same queryTarget
+          showContainer(targetClientRect);
+        } else {
+          console.log("abandom due to mismatch of queryTarget..");
+        }
       }
-      extensionContent.appendChild(queryContentNode);
-      showContainer(targetClientRect);
     }
-  });
+  );
 }
 
 function getQueryTargetByHovering() {
@@ -144,8 +166,6 @@ document.addEventListener("selectstart", event => {
 });
 
 document.addEventListener("mouseup", event => {
-  console.log("... mouseup...");
-
   if (isSelecting) {
     const sel = window.getSelection();
     const selectedString = sel.toString().trim();
@@ -165,7 +185,6 @@ document.addEventListener("selectionchange", event => {});
 
 document.addEventListener("mousemove", event => {
   if (isSelecting || hasValidSelection()) {
-    console.log("... sking hovering  for existing selection...");
     return;
   }
 
