@@ -1,6 +1,6 @@
 const rootSelector = ".__EXT_BT_ROOT__";
-const containerSelector = ".__EXT_BT_CONTAINER__";
-const loadingSelector = ".__EXT_BT_LOADING__";
+const containerSelector = `${rootSelector} .container`;
+const loadingSelector = `${rootSelector} .loading`;
 
 function getSeletionCR(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
@@ -225,4 +225,6 @@ function disableQueryTargetDetect() {
   queryTargetDetectInterval = null;
 }
 
-enableQueryTargetDetect();
+if (document.querySelector(rootSelector)) {
+  enableQueryTargetDetect();
+}
