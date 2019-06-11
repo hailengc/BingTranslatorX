@@ -159,9 +159,12 @@ function getQueryTargetByHovering() {
 let isSelecting = false,
   lastQueryTarget = QueryTarget.createNullTarget();
 
-document.addEventListener("selectstart", event => {
+function startSelecting(event) {
   isSelecting = true;
-});
+  hideAll();
+}
+document.addEventListener("mousedown", startSelecting);
+document.addEventListener("selectstart", startSelecting);
 
 document.addEventListener("mouseup", event => {
   if (isSelecting) {
@@ -203,7 +206,6 @@ function enableQueryTargetDetect() {
     queryTargetDetectInterval ||
     setInterval(() => {
       if (isSelecting) {
-        // do nothing while selecting
         return;
       } else if (hasValidSelection()) {
         queryAndShow(lastQueryTarget);
