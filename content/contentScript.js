@@ -94,7 +94,7 @@ function convertFromHTMLContent(htmlString) {
 }
 
 function queryAndShow(queryTarget) {
-  if (queryTarget.isActive) {
+  if (queryTarget.isActive || !queryTarget.targetString) {
     return;
   }
   queryTarget.isActive = true;
