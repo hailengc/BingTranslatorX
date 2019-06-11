@@ -168,13 +168,14 @@ document.addEventListener("mousedown", startSelecting);
 document.addEventListener("selectstart", startSelecting);
 
 document.addEventListener("mouseup", event => {
-  if (isSelecting) {
-    const sel = window.getSelection();
-    const selectedString = sel.toString().trim();
-    if (selectedString) {
-      lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
-    } else {
-      lastQueryTarget = QueryTarget.createNullTarget();
+  const sel = window.getSelection();
+  const selectedString = sel.toString().trim();
+  if (selectedString) {
+    lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
+  } else {
+    const queryTarget = getQueryTargetByHovering();
+    if (!queryTarget.equalTo(lastQueryTarget)) {
+      lastQueryTarget = queryTarget;
     }
   }
 

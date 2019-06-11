@@ -20,7 +20,7 @@ const queryBaseUrl = "https://cn.bing.com/dict/search?mkt=zh-cn&q=";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "query") {
-    fetch(queryBaseUrl + request.queryString)
+    fetch(queryBaseUrl + request.queryString, { mode: "cors" })
       .then(response => {
         if (response.ok) {
           return response.text();
