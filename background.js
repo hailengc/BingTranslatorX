@@ -16,16 +16,31 @@ chrome.runtime.onInstalled.addListener(function() {
   });
 });
 
+const queryBaseUrl = "https://cn.bing.com/dict/search?mkt=zh-cn&q=";
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "query") {
-    axios
-      .get("https://cn.bing.com/dict/search?mkt=zh-cn&q=" + request.queryString)
-      .then(res => {
+    fetch(queryBaseUrl + request.queryString)
+      .then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw Promise.reject(response.statusText);
+        }
+      })
+      .then(data => {
+        sendResponse({
+          status: 0,
+          data: data,
+          ...request
+        });
+      })
+      .catch(error =>
         sendResponse({
           ...request,
-          data: res.data
-        });
-      });
+          status: -1
+        })
+      );
 
     // send response async
     return true;

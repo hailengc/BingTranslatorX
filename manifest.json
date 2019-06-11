@@ -5,7 +5,7 @@
   "permissions": ["activeTab", "declarativeContent", "storage"],
   "options_page": "options.html",
   "background": {
-    "scripts": ["lib/external/axios.min.js", "background.js"],
+    "scripts": ["background.js"],
     "persistent": false
   },
   "browser_action": {
@@ -28,7 +28,6 @@
   "content_scripts": [
     {
       "js": [
-        "lib/external/axios.min.js",
         "lib/util.js",
         "lib/QueryTarget.js",
         "lib/BingDictConverter.js",
