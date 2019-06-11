@@ -97,12 +97,12 @@ function queryAndShow(queryTarget) {
   if (queryTarget.isActive) {
     return;
   }
-
   queryTarget.isActive = true;
-  const queryString = queryTarget.targetString;
+
   const targetClientRect = queryTarget.targetClientRect;
   showLoading(targetClientRect);
 
+  const queryString = queryTarget.targetString;
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     response => {
@@ -157,6 +157,7 @@ function getQueryTargetByHovering() {
 }
 
 let isSelecting = false,
+  enableHovering = false,
   lastQueryTarget = QueryTarget.createNullTarget();
 
 function startSelecting(event) {
@@ -170,9 +171,7 @@ document.addEventListener("mouseup", event => {
   if (isSelecting) {
     const sel = window.getSelection();
     const selectedString = sel.toString().trim();
-
     if (selectedString) {
-      // queryAndShow(selectedString, getSeletionCR(sel));
       lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
     } else {
       lastQueryTarget = QueryTarget.createNullTarget();
@@ -185,7 +184,7 @@ document.addEventListener("mouseup", event => {
 // document.addEventListener("selectionchange", event => {});
 
 function updateQueryTarget(event) {
-  if (isSelecting || hasValidSelection()) {
+  if (!enableHovering || isSelecting || hasValidSelection()) {
     return;
   }
   const queryTarget = getQueryTargetByHovering();
@@ -228,5 +227,6 @@ function disableQueryTargetDetect() {
 }
 
 if (document.querySelector(rootSelector)) {
+  enableHovering = true;
   enableQueryTargetDetect();
 }
