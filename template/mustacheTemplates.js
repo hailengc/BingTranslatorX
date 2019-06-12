@@ -1,8 +1,8 @@
 const standardTemplate = `
 <div class="content">
-  {{#showTip}}
+  {{#tip}}
   <div class="tip">{{ tip }}</div>
-  {{/showTip}}
+  {{/tip}}
   <div class="header">
     <div class="word">
       <h1>
@@ -10,7 +10,7 @@ const standardTemplate = `
       </h1>
     </div>
   </div>
-  <ul class="translation-list">
+  <ul class="translation-list" style="list-style-type:none;">
     {{#translationList}}
     <li>
       <span class="property">{{ property }}</span>

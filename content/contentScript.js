@@ -62,14 +62,17 @@ function adjustPosition(selector, targetClientRect) {
   }
 }
 
-function updateContainerContent(childContent) {
+function updateContainerContent(contentString) {
   let result = false;
   const container = document.querySelector(containerSelector);
   if (container) {
-    if (container.firstChild) {
-      container.removeChild(container.firstChild);
+    // note the white space in dom,
+    // see: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace_in_the_DOM
+    if (container.firstElementChild) {
+      container.removeChild(container.firstElementChild);
     }
-    container.appendChild(childContent);
+    // container.appendChild(contentString);
+    container.insertAdjacentHTML("beforeend", contentString);
     result = true;
   }
 
@@ -79,18 +82,35 @@ function updateContainerContent(childContent) {
 function convertFromHTMLContent(htmlString) {
   const domParser = new DOMParser();
   const queryDom = domParser.parseFromString(htmlString, "text/html");
-  const reuslt = queryDom.querySelector(".qdef");
-  if (!reuslt) {
-    return null;
+  const targetNode = queryDom.querySelector(".lf_area");
+  let convertedContent = null;
+  if (!targetNode) {
+    // TODO: return a friend html content
   } else {
-    removeNodeBySelectors(reuslt, [
-      ".hd_div1",
-      ".img_area",
-      ".wd_div",
-      ".df_div"
-    ]);
-    return reuslt;
+    const translationNode = targetNode.querySelector(".qdef");
+    if (translationNode) {
+      // use standard template
+      // const tip = translationNode.querySelector(".in_tip").textContent;
+      const headerWord = translationNode.querySelector("#headword").textContent;
+      const translationList = [];
+      const ulNode = translationNode.querySelector("ul");
+      for (const li of ulNode.children) {
+        const property = li.querySelector(".pos").textContent;
+        const translation = li.querySelector(".def").innerHTML;
+        translationList.push({ property, translation });
+      }
+
+      Mustache.parse(standardTemplate); // optional, speeds up future uses
+      convertedContent = Mustache.render(standardTemplate, {
+        tip: "",
+        headerWord,
+        translationList
+      });
+    } else {
+      // use multi-translation template
+    }
   }
+  return convertedContent;
 }
 
 function queryAndShow(queryTarget) {
@@ -107,8 +127,8 @@ function queryAndShow(queryTarget) {
     { action: "query", queryString, queryTarget },
     response => {
       const htmlString = response.data;
-      const queryResult = convertFromHTMLContent(htmlString);
-      if (queryResult && updateContainerContent(queryResult)) {
+      const convertedContent = convertFromHTMLContent(htmlString);
+      if (convertedContent && updateContainerContent(convertedContent)) {
         if (queryTarget.equalTo(lastQueryTarget)) {
           // check if is still the same queryTarget
           showContainer(targetClientRect);
