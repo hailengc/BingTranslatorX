@@ -112,8 +112,6 @@ function queryAndShow(queryTarget) {
         if (queryTarget.equalTo(lastQueryTarget)) {
           // check if is still the same queryTarget
           showContainer(targetClientRect);
-        } else {
-          console.log("abandom due to mismatch of queryTarget..");
         }
       }
     }
