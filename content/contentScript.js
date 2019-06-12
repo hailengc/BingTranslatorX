@@ -135,7 +135,7 @@ function getQueryTargetByHovering() {
   }
 
   let queryTarget = QueryTarget.createNullTarget();
-  if (textNode && textNode.nodeType == 3) {
+  if (textNode && textNode.nodeType == Node.TEXT_NODE) {
     const selection = window.getSelection();
     selection.empty();
     selection.addRange(range);

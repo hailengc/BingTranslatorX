@@ -28,9 +28,10 @@
   "content_scripts": [
     {
       "js": [
-        "lib/util.js",
+        "lib/external/mustache.min.js",
+        "template/mustacheTemplates.js",
         "lib/QueryTarget.js",
-        "lib/BingDictConverter.js",
+        "lib/util.js",
         "content/init.js",
         "content/contentScript.js"
       ],
