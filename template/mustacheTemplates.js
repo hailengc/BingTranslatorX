@@ -1,5 +1,26 @@
 const standardTemplate = `
 <div class="content">
+  <div class="header">
+    {{#tip}}
+    <div class="tip">{{ tip }}</div>
+    {{/tip}}
+    <div class="word">
+        <span> {{ headerWord }} </span>
+    </div>
+  </div>
+  <ul class="translation-list" >
+    {{#translationList}}
+    <li>
+      <span class="property {{#isWeb}}web{{/isWeb}}">{{ property }}</span>
+      <span class="translation" >{{ &translation }}</span>
+    </li>
+    {{/translationList}}
+  </ul>
+</div>
+`;
+
+const multiWordTemplate = `
+<div class="content">
   {{#tip}}
   <div class="tip">{{ tip }}</div>
   {{/tip}}
@@ -11,11 +32,17 @@ const standardTemplate = `
   <ul class="translation-list" >
     {{#translationList}}
     <li>
-      <span class="property">{{ property }}</span>
+      <span class="property {{#isWeb}}web{{/isWeb}}">{{ property }}</span>
       <span class="translation" >{{ &translation }}</span>
     </li>
     {{/translationList}}
   </ul>
+</div>
+`;
+
+const noContentTemplate = `
+<div class="content">
+  <div class="no-content">{{message}}</div>
 </div>
 `;
 

@@ -5,24 +5,34 @@
   all: unset;
 }
 .__EXT_BT_ROOT__ .container {
-  background-color: skyblue;
-  min-width: 100px;
   border: 1px solid grey;
-  border-collapse: separate;
   position: fixed;
   z-index: 999999;
   font-family: Arial, Helvetica, sans-serif;
+  background-color: skyblue;
   color: black;
+  padding: 5px;
+}
+.__EXT_BT_ROOT__ .container div {
+  display: block;
+}
+.__EXT_BT_ROOT__ .container .content .header {
+  margin: 5px;
+}
+.__EXT_BT_ROOT__ .container .content .header .tip {
+  font-size: 14px;
+  background-color: #f9f5dd;
+  padding: 2px;
 }
 .__EXT_BT_ROOT__ .container .content .header .word {
-  padding: 5px;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 500;
 }
 .__EXT_BT_ROOT__ .container .content ul.translation-list {
-  max-width: 200px;
+  max-width: 250px;
   list-style-type: none;
   display: table;
+  border-collapse: separate;
   border-spacing: 5px 10px;
 }
 .__EXT_BT_ROOT__ .container .content ul.translation-list li {
@@ -39,11 +49,17 @@
   vertical-align: middle;
   background-color: #aaa;
   color: #fff;
-  min-width: 20px;
+}
+.__EXT_BT_ROOT__ .container .content ul.translation-list li .web {
+  background-color: #000;
 }
 .__EXT_BT_ROOT__ .container .content ul.translation-list li .translation {
   font-size: 14px;
   font-weight: bold;
+}
+.__EXT_BT_ROOT__ .container .content .no-content {
+  font-size: 14px;
+  font-style: italic;
 }
 .__EXT_BT_ROOT__ .loading {
   position: fixed;

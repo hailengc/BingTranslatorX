@@ -84,32 +84,44 @@ function convertFromHTMLContent(htmlString) {
   const queryDom = domParser.parseFromString(htmlString, "text/html");
   const targetNode = queryDom.querySelector(".lf_area");
   let convertedContent = null;
-  if (!targetNode) {
-    // TODO: return a friend html content
-  } else {
+  try {
+    if (!targetNode) {
+      throw new Error("invalid content");
+    }
     const translationNode = targetNode.querySelector(".qdef");
     if (translationNode) {
       // use standard template
-      // const tip = translationNode.querySelector(".in_tip").textContent;
+      const tipNode = targetNode.querySelector(".in_tip");
+      const tip = tipNode && tipNode.textContent;
+
       const headerWord = translationNode.querySelector("#headword").textContent;
       const translationList = [];
       const ulNode = translationNode.querySelector("ul");
       for (const li of ulNode.children) {
         const property = li.querySelector(".pos").textContent;
         const translation = li.querySelector(".def").innerHTML;
-        translationList.push({ property, translation });
+        translationList.push({
+          property,
+          translation,
+          isWeb: property.toLowerCase().indexOf("web") > -1
+        });
       }
 
-      Mustache.parse(standardTemplate); // optional, speeds up future uses
+      Mustache.parse(standardTemplate); // optional cache, speeds up future uses
       convertedContent = Mustache.render(standardTemplate, {
-        tip: "",
+        tip,
         headerWord,
         translationList
       });
     } else {
       // use multi-translation template
     }
+  } catch (error) {
+    convertedContent = Mustache.render(noContentTemplate, {
+      message: "Sorry, 没有找到该词的翻译"
+    });
   }
+
   return convertedContent;
 }
 
