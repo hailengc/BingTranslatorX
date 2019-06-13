@@ -35,7 +35,7 @@
         "content/init.js",
         "content/contentScript.js"
       ],
-      "css": ["content/style.css"],
+      "css": ["style/main.css"],
       "matches": ["<all_urls>"],
       "run_at": "document_end"
     }

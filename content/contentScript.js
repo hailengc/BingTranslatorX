@@ -234,7 +234,7 @@ function enableQueryTargetDetect() {
         ) {
           queryAndShow(lastQueryTarget);
         } else {
-          hideAll();
+          // hideAll();
         }
       }
     }, CHECK_INTERVAL);

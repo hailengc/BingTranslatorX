@@ -5,16 +5,14 @@ const standardTemplate = `
   {{/tip}}
   <div class="header">
     <div class="word">
-      <h1>
-        <strong>{{ headerWord }}</strong>
-      </h1>
+        <span> {{ headerWord }} </span>
     </div>
   </div>
-  <ul class="translation-list" style="list-style-type:none;">
+  <ul class="translation-list" >
     {{#translationList}}
     <li>
       <span class="property">{{ property }}</span>
-      <span class="translation">{{ &translation }}</span>
+      <span class="translation" >{{ &translation }}</span>
     </li>
     {{/translationList}}
   </ul>

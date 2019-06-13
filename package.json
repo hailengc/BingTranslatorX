@@ -1,0 +1,25 @@
+{
+  "name": "bingtranslator",
+  "version": "1.0.0",
+  "description": "A translator based on Bing dict",
+  "scripts": {
+    "genstyle": "npx sass style/main.scss style/main.css --no-source-map"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hailengc/BingTranslator.git"
+  },
+  "keywords": [
+    "chrome",
+    "extension"
+  ],
+  "author": "Hailong Cao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hailengc/BingTranslator/issues"
+  },
+  "homepage": "https://github.com/hailengc/BingTranslator#readme",
+  "dependencies": {
+    "sass": "^1.21.0"
+  }
+}
