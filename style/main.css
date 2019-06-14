@@ -1,23 +1,21 @@
-.__EXT_BT_ROOT__ div,
 .__EXT_BT_ROOT__ span,
 .__EXT_BT_ROOT__ ul,
 .__EXT_BT_ROOT__ li {
   all: unset;
+}
+.__EXT_BT_ROOT__ div {
+  display: block;
 }
 .__EXT_BT_ROOT__ .container {
   border: 1px solid grey;
   position: fixed;
   z-index: 999999;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: skyblue;
   color: black;
+}
+.__EXT_BT_ROOT__ .container .content {
+  background-color: skyblue;
   padding: 5px;
-}
-.__EXT_BT_ROOT__ .container div {
-  display: block;
-}
-.__EXT_BT_ROOT__ .container .content .header {
-  margin: 5px;
 }
 .__EXT_BT_ROOT__ .container .content .header .tip {
   font-size: 14px;
@@ -57,9 +55,10 @@
   font-size: 14px;
   font-weight: bold;
 }
-.__EXT_BT_ROOT__ .container .content .no-content {
+.__EXT_BT_ROOT__ .container .no-content {
   font-size: 14px;
   font-style: italic;
+  background-color: yellow;
 }
 .__EXT_BT_ROOT__ .loading {
   position: fixed;

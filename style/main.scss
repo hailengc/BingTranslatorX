@@ -1,9 +1,13 @@
 .__EXT_BT_ROOT__ {
-  div,
+  // div,
   span,
   ul,
   li {
     all: unset;
+  }
+
+  div {
+    display: block;
   }
 
   .container {
@@ -11,17 +15,12 @@
     position: fixed;
     z-index: 999999;
     font-family: Arial, Helvetica, sans-serif;
-    background-color: skyblue;
     color: black;
-    padding: 5px;
-
-    div {
-      display: block;
-    }
 
     .content {
+      background-color: skyblue;
+      padding: 5px;
       .header {
-        margin: 5px;
         .tip {
           font-size: 14px;
           background-color: #f9f5dd;
@@ -67,11 +66,12 @@
           }
         }
       }
+    }
 
-      .no-content {
-        font-size: 14px;
-        font-style: italic;
-      }
+    .no-content {
+      font-size: 14px;
+      font-style: italic;
+      background-color: yellow;
     }
   }
 

@@ -2,6 +2,17 @@ const rootSelector = ".__EXT_BT_ROOT__";
 const containerSelector = `${rootSelector} .container`;
 const loadingSelector = `${rootSelector} .loading`;
 
+let isSelecting = false,
+  enableHovering = false,
+  lastQueryTarget = QueryTarget.createNullTarget();
+
+const ERROR_INVALID_CONTENT = "INVALID_CONTENT";
+const ERROR_NETWORK_ERROR = "NETWORK_ERROR";
+
+const TRANSLATION_CONTENT_NORMAL = "TRANSLATION_CONTENT_NORMAL";
+const TRANSLATION_CONTENT_MULTIWORD = "TRANSLATION_CONTENT_MULTIWORD";
+const TRANSLATION_CONTENT_INVALID = "TRANSLATION_CONTENT_INVALID";
+
 function getSeletionCR(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
 }
@@ -71,7 +82,6 @@ function updateContainerContent(contentString) {
     if (container.firstElementChild) {
       container.removeChild(container.firstElementChild);
     }
-    // container.appendChild(contentString);
     container.insertAdjacentHTML("beforeend", contentString);
     result = true;
   }
@@ -79,25 +89,36 @@ function updateContainerContent(contentString) {
   return result;
 }
 
-function convertFromHTMLContent(htmlString) {
-  const domParser = new DOMParser();
-  const queryDom = domParser.parseFromString(htmlString, "text/html");
-  const targetNode = queryDom.querySelector(".lf_area");
+function getTranslationContentType(contentNode) {
+  if (contentNode.querySelector(".qdef > ul")) {
+    return TRANSLATION_CONTENT_NORMAL;
+  } else if (contentNode.querySelector(".lf_area .p1-11")) {
+    return TRANSLATION_CONTENT_MULTIWORD;
+  } else {
+    return TRANSLATION_CONTENT_INVALID;
+  }
+}
+
+function convertFromHTMLContent(htmlContent) {
   let convertedContent = null;
   try {
-    if (!targetNode) {
-      throw new Error("invalid content");
+    if (htmlContent === ERROR_NETWORK_ERROR) {
+      throw new Error(ERROR_NETWORK_ERROR);
     }
-    const stdTranslationNode = targetNode.querySelector(".qdef");
-    if (stdTranslationNode) {
-      // use standard template
-      const tipNode = targetNode.querySelector(".in_tip");
+    const domParser = new DOMParser();
+    const contentNode = domParser
+      .parseFromString(htmlContent, "text/html")
+      .querySelector(".content");
+    const contentType = getTranslationContentType(contentNode);
+    if (contentType === TRANSLATION_CONTENT_INVALID) {
+      throw new Error(ERROR_INVALID_CONTENT);
+    } else if (contentType === TRANSLATION_CONTENT_NORMAL) {
+      const tipNode = contentNode.querySelector(".in_tip");
       const tip = tipNode && tipNode.textContent;
 
-      const headerWord = stdTranslationNode.querySelector("#headword")
-        .textContent;
+      const headerWord = contentNode.querySelector("#headword").textContent;
       const translationList = [];
-      const ulNode = stdTranslationNode.querySelector("ul");
+      const ulNode = contentNode.querySelector("ul");
       for (const li of ulNode.children) {
         const property = li.querySelector(".pos").textContent;
         const translation = li.querySelector(".def").innerHTML;
@@ -114,17 +135,28 @@ function convertFromHTMLContent(htmlString) {
         headerWord,
         translationList
       });
-    } else {
-      //use multi-word translation
-      const translation = targetNode.querySelector(".p1-11").textContent;
+    } else if (contentType === TRANSLATION_CONTENT_MULTIWORD) {
+      const translation = contentNode.querySelector(".p1-11").textContent;
       convertedContent = Mustache.render(multiWordTemplate, {
         translation
       });
     }
   } catch (error) {
-    convertedContent = Mustache.render(noContentTemplate, {
-      message: "Sorry, 没有找到该词的翻译"
-    });
+    console.error(error);
+
+    if (error.message === ERROR_NETWORK_ERROR) {
+      convertedContent = Mustache.render(noContentTemplate, {
+        message: "Sorry, 似乎有网络错误"
+      });
+    } else if (error.message === ERROR_INVALID_CONTENT) {
+      convertedContent = Mustache.render(noContentTemplate, {
+        message: "Sorry, 没有找到该词的翻译"
+      });
+    } else {
+      convertedContent = Mustache.render(noContentTemplate, {
+        message: "Sorry, 似乎有未知错误"
+      });
+    }
   }
 
   return convertedContent;
@@ -143,11 +175,12 @@ function queryAndShow(queryTarget) {
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     response => {
-      const htmlString = response.data;
-      const convertedContent = convertFromHTMLContent(htmlString);
+      const htmlContent =
+        response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
+      const convertedContent = convertFromHTMLContent(htmlContent);
       if (convertedContent && updateContainerContent(convertedContent)) {
+        // check if still the same queryTarget
         if (queryTarget.equalTo(lastQueryTarget)) {
-          // check if is still the same queryTarget
           showContainer(targetClientRect);
         }
       }
@@ -190,10 +223,6 @@ function getQueryTargetByHovering() {
 
   return queryTarget;
 }
-
-let isSelecting = false,
-  enableHovering = false,
-  lastQueryTarget = QueryTarget.createNullTarget();
 
 function startSelecting(event) {
   isSelecting = true;

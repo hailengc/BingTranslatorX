@@ -26,8 +26,8 @@ const multiWordTemplate = `
 `;
 
 const noContentTemplate = `
-<div class="content">
-  <div class="no-content">{{message}}</div>
+<div class="no-content">
+  <span>{{message}}</span>
 </div>
 `;
 
