@@ -1,5 +1,5 @@
 .__EXT_BT_ROOT__ {
-  // div,
+  div,
   span,
   ul,
   li {
@@ -16,17 +16,15 @@
     z-index: 999999;
     font-family: Arial, Helvetica, sans-serif;
     color: black;
+    background-color: skyblue;
 
     .content {
-      background-color: skyblue;
-      padding: 5px;
       .header {
+        padding: 5px;
         .tip {
           font-size: 14px;
           background-color: #f9f5dd;
-          padding: 2px;
         }
-
         .word {
           font-size: 28px;
           font-weight: 500;
@@ -34,7 +32,7 @@
       }
 
       ul.translation-list {
-        max-width: 250px;
+        // max-width: 250px;
         list-style-type: none;
         display: table;
         border-collapse: separate;
@@ -69,6 +67,7 @@
     }
 
     .no-content {
+      padding: 3px;
       font-size: 14px;
       font-style: italic;
       background-color: yellow;

@@ -1,3 +1,4 @@
+.__EXT_BT_ROOT__ div,
 .__EXT_BT_ROOT__ span,
 .__EXT_BT_ROOT__ ul,
 .__EXT_BT_ROOT__ li {
@@ -12,22 +13,20 @@
   z-index: 999999;
   font-family: Arial, Helvetica, sans-serif;
   color: black;
-}
-.__EXT_BT_ROOT__ .container .content {
   background-color: skyblue;
+}
+.__EXT_BT_ROOT__ .container .content .header {
   padding: 5px;
 }
 .__EXT_BT_ROOT__ .container .content .header .tip {
   font-size: 14px;
   background-color: #f9f5dd;
-  padding: 2px;
 }
 .__EXT_BT_ROOT__ .container .content .header .word {
   font-size: 28px;
   font-weight: 500;
 }
 .__EXT_BT_ROOT__ .container .content ul.translation-list {
-  max-width: 250px;
   list-style-type: none;
   display: table;
   border-collapse: separate;
@@ -56,6 +55,7 @@
   font-weight: bold;
 }
 .__EXT_BT_ROOT__ .container .no-content {
+  padding: 3px;
   font-size: 14px;
   font-style: italic;
   background-color: yellow;
