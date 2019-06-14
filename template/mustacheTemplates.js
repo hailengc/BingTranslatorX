@@ -21,22 +21,7 @@ const standardTemplate = `
 
 const multiWordTemplate = `
 <div class="content">
-  {{#tip}}
-  <div class="tip">{{ tip }}</div>
-  {{/tip}}
-  <div class="header">
-    <div class="word">
-        <span> {{ headerWord }} </span>
-    </div>
-  </div>
-  <ul class="translation-list" >
-    {{#translationList}}
-    <li>
-      <span class="property {{#isWeb}}web{{/isWeb}}">{{ property }}</span>
-      <span class="translation" >{{ &translation }}</span>
-    </li>
-    {{/translationList}}
-  </ul>
+  <span class="multi-word-translation">{{translation}}</span>
 </div>
 `;
 

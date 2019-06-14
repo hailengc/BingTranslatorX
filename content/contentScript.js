@@ -88,15 +88,16 @@ function convertFromHTMLContent(htmlString) {
     if (!targetNode) {
       throw new Error("invalid content");
     }
-    const translationNode = targetNode.querySelector(".qdef");
-    if (translationNode) {
+    const stdTranslationNode = targetNode.querySelector(".qdef");
+    if (stdTranslationNode) {
       // use standard template
       const tipNode = targetNode.querySelector(".in_tip");
       const tip = tipNode && tipNode.textContent;
 
-      const headerWord = translationNode.querySelector("#headword").textContent;
+      const headerWord = stdTranslationNode.querySelector("#headword")
+        .textContent;
       const translationList = [];
-      const ulNode = translationNode.querySelector("ul");
+      const ulNode = stdTranslationNode.querySelector("ul");
       for (const li of ulNode.children) {
         const property = li.querySelector(".pos").textContent;
         const translation = li.querySelector(".def").innerHTML;
@@ -114,7 +115,11 @@ function convertFromHTMLContent(htmlString) {
         translationList
       });
     } else {
-      // use multi-translation template
+      //use multi-word translation
+      const translation = targetNode.querySelector(".p1-11").textContent;
+      convertedContent = Mustache.render(multiWordTemplate, {
+        translation
+      });
     }
   } catch (error) {
     convertedContent = Mustache.render(noContentTemplate, {
@@ -246,7 +251,7 @@ function enableQueryTargetDetect() {
         ) {
           queryAndShow(lastQueryTarget);
         } else {
-          // hideAll();
+          hideAll();
         }
       }
     }, CHECK_INTERVAL);
