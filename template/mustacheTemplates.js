@@ -20,8 +20,8 @@ const standardTemplate = `
 `;
 
 const multiWordTemplate = `
-<div class="content">
-  <span class="multi-word-translation">{{translation}}</span>
+<div class="multi-word-translation">
+  <span>{{translation}}</span>
 </div>
 `;
 

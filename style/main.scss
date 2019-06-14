@@ -1,4 +1,4 @@
-.__EXT_BT_ROOT__ {
+#__EXT_BT_ROOT__ {
   div,
   span,
   ul,
@@ -32,7 +32,7 @@
       }
 
       ul.translation-list {
-        // max-width: 250px;
+        max-width: 300px;
         list-style-type: none;
         display: table;
         border-collapse: separate;
@@ -71,6 +71,11 @@
       font-size: 14px;
       font-style: italic;
       background-color: yellow;
+    }
+
+    .multi-word-translation {
+      font-size: 14px;
+      padding: 3px;
     }
   }
 

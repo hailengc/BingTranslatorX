@@ -1,4 +1,4 @@
-const rootSelector = ".__EXT_BT_ROOT__";
+const rootSelector = "#__EXT_BT_ROOT__";
 const containerSelector = `${rootSelector} .container`;
 const loadingSelector = `${rootSelector} .loading`;
 

@@ -1,5 +1,5 @@
 const injectedTemplate = `
-<div class="__EXT_BT_ROOT__" style="display: block">
+<div id="__EXT_BT_ROOT__" style="display: block">
   <div class="container" style="display: none;"></div>
   <div class="loading" style="display: none;">
     <img src="${chrome.runtime.getURL(

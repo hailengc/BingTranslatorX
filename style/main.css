@@ -1,13 +1,13 @@
-.__EXT_BT_ROOT__ div,
-.__EXT_BT_ROOT__ span,
-.__EXT_BT_ROOT__ ul,
-.__EXT_BT_ROOT__ li {
+#__EXT_BT_ROOT__ div,
+#__EXT_BT_ROOT__ span,
+#__EXT_BT_ROOT__ ul,
+#__EXT_BT_ROOT__ li {
   all: unset;
 }
-.__EXT_BT_ROOT__ div {
+#__EXT_BT_ROOT__ div {
   display: block;
 }
-.__EXT_BT_ROOT__ .container {
+#__EXT_BT_ROOT__ .container {
   border: 1px solid grey;
   position: fixed;
   z-index: 999999;
@@ -15,31 +15,32 @@
   color: black;
   background-color: skyblue;
 }
-.__EXT_BT_ROOT__ .container .content .header {
+#__EXT_BT_ROOT__ .container .content .header {
   padding: 5px;
 }
-.__EXT_BT_ROOT__ .container .content .header .tip {
+#__EXT_BT_ROOT__ .container .content .header .tip {
   font-size: 14px;
   background-color: #f9f5dd;
 }
-.__EXT_BT_ROOT__ .container .content .header .word {
+#__EXT_BT_ROOT__ .container .content .header .word {
   font-size: 28px;
   font-weight: 500;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list {
+#__EXT_BT_ROOT__ .container .content ul.translation-list {
+  max-width: 300px;
   list-style-type: none;
   display: table;
   border-collapse: separate;
   border-spacing: 5px 10px;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list li {
+#__EXT_BT_ROOT__ .container .content ul.translation-list li {
   display: table-row;
   border-bottom: 30px solid transparent;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list li > span {
+#__EXT_BT_ROOT__ .container .content ul.translation-list li > span {
   display: table-cell;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list li .property {
+#__EXT_BT_ROOT__ .container .content ul.translation-list li .property {
   font-weight: bold;
   font-size: 13px;
   text-align: center;
@@ -47,20 +48,24 @@
   background-color: #aaa;
   color: #fff;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list li .web {
+#__EXT_BT_ROOT__ .container .content ul.translation-list li .web {
   background-color: #000;
 }
-.__EXT_BT_ROOT__ .container .content ul.translation-list li .translation {
+#__EXT_BT_ROOT__ .container .content ul.translation-list li .translation {
   font-size: 14px;
   font-weight: bold;
 }
-.__EXT_BT_ROOT__ .container .no-content {
+#__EXT_BT_ROOT__ .container .no-content {
   padding: 3px;
   font-size: 14px;
   font-style: italic;
   background-color: yellow;
 }
-.__EXT_BT_ROOT__ .loading {
+#__EXT_BT_ROOT__ .container .multi-word-translation {
+  font-size: 14px;
+  padding: 3px;
+}
+#__EXT_BT_ROOT__ .loading {
   position: fixed;
   z-index: 999999;
 }
