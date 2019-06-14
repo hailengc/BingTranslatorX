@@ -75,7 +75,7 @@ function adjustPosition(selector, targetClientRect) {
 
 function updateContainerContent(contentString) {
   let result = false;
-  const container = document.querySelector(containerSelector);
+  const container = getContainerNode();
   if (container) {
     // note the white space in dom,
     // see: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace_in_the_DOM
@@ -228,23 +228,6 @@ function startSelecting(event) {
   isSelecting = true;
   hideAll();
 }
-document.addEventListener("mousedown", startSelecting);
-document.addEventListener("selectstart", startSelecting);
-
-document.addEventListener("mouseup", event => {
-  const sel = window.getSelection();
-  const selectedString = sel.toString().trim();
-  if (selectedString) {
-    lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
-  } else {
-    const queryTarget = getQueryTargetByHovering();
-    if (!queryTarget.equalTo(lastQueryTarget)) {
-      lastQueryTarget = queryTarget;
-    }
-  }
-
-  isSelecting = false;
-});
 
 // document.addEventListener("selectionchange", event => {});
 
@@ -257,9 +240,6 @@ function updateQueryTarget(event) {
     lastQueryTarget = queryTarget;
   }
 }
-
-document.addEventListener("scroll", updateQueryTarget);
-document.addEventListener("mousemove", updateQueryTarget);
 
 const CHECK_INTERVAL = 20;
 const VALID_HOVERING_TIME = 300;
@@ -291,7 +271,44 @@ function disableQueryTargetDetect() {
   queryTargetDetectInterval = null;
 }
 
+function getContainerNode() {
+  return document.querySelector(containerSelector);
+}
+
+function isEventFromContainer(event) {
+  const container = document.querySelector(containerSelector);
+  return container.contains(event.target);
+}
+
 if (document.querySelector(rootSelector)) {
   enableHovering = true;
   enableQueryTargetDetect();
+
+  // document.addEventListener("mousedown", startSelecting);
+  document.addEventListener("selectstart", startSelecting);
+  document.addEventListener("mouseup", event => {
+    if (isEventFromContainer(event)) {
+      return;
+    }
+
+    const sel = window.getSelection();
+    const selectedString = sel.toString().trim();
+    if (selectedString) {
+      lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
+    } else {
+      const queryTarget = getQueryTargetByHovering();
+      if (!queryTarget.equalTo(lastQueryTarget)) {
+        lastQueryTarget = queryTarget;
+      }
+    }
+
+    isSelecting = false;
+  });
+
+  document.addEventListener("scroll", updateQueryTarget);
+  document.addEventListener("mousemove", updateQueryTarget);
+
+  getContainerNode().addEventListener("click", event => {
+    console.log(event.target);
+  });
 }
