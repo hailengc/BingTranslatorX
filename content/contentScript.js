@@ -30,7 +30,14 @@ function showRoot() {
   showElement(rootSelector);
 }
 
+function hideRoot() {
+  const rootNode = document.querySelector(rootSelector);
+  rootNode.style.top = -999;
+  rootNode.style.left = -999;
+}
+
 function hideAll() {
+  hideRoot();
   hideElement(containerSelector);
   hideElement(loadingSelector);
 }
@@ -205,7 +212,9 @@ function getQueryTargetByHovering() {
   }
 
   let queryTarget = QueryTarget.createNullTarget();
-  if (textNode && textNode.nodeType == Node.TEXT_NODE) {
+  if (isValidTextNode(textNode)) {
+    console.log("... valid text node..");
+
     const selection = window.getSelection();
     selection.empty();
     selection.addRange(range);
@@ -218,7 +227,9 @@ function getQueryTargetByHovering() {
     if (qstr && inRect(rect, event.clientX, event.clientY)) {
       queryTarget = new QueryTarget(qstr, getSeletionCR(selection));
     }
-    selection.empty();
+
+    selection.setPosition(textNode, offset);
+    // textNode.parentElement.focus();
   }
 
   return queryTarget;
@@ -296,10 +307,10 @@ if (document.querySelector(rootSelector)) {
     if (selectedString) {
       lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
     } else {
-      const queryTarget = getQueryTargetByHovering();
-      if (!queryTarget.equalTo(lastQueryTarget)) {
-        lastQueryTarget = queryTarget;
-      }
+      // const queryTarget = getQueryTargetByHovering();
+      // if (!queryTarget.equalTo(lastQueryTarget)) {
+      //   lastQueryTarget = queryTarget;
+      // }
     }
 
     isSelecting = false;
