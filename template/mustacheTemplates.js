@@ -31,16 +31,13 @@ const noContentTemplate = `
 </div>
 `;
 
-const mTemplate = `
-<b>Hello {{name}}!</b>
-<ul> 
-    {{#languages}}
-        <li>{{.}}</li>
-    {{/languages}}
-    {{> partial}}
-</ul>
-`;
-
-const mPartial = `
-<b>this is partial: {{instrument}}</b>
+const injectTemplate = `
+<div id="__EXT_BT_ROOT__" style="display: block">
+  <div class="container" style="display: none;">{{>content}}</div>
+  <div class="loading" style="display: none;">
+    <img src="${chrome.runtime.getURL(
+      "images/loading.svg"
+    )}"  style="height: 30px;" />
+  </div>
+</div>
 `;

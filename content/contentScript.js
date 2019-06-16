@@ -21,34 +21,32 @@ function hasValidSelection() {
   return isStringValid(window.getSelection().toString());
 }
 
-function isContainerShowing() {
-  const extContainer = document.querySelector(containerSelector);
-  return extContainer.style.display !== "none";
-}
-
 function showRoot() {
-  showElement(rootSelector);
+  // showElement(rootSelector);
 }
 
 function hideAll() {
-  hideElement(containerSelector);
-  hideElement(loadingSelector);
+  // hideElement(containerSelector);
+  // hideElement(loadingSelector);
+  // hideElement(rootSelector);
 }
 
 function showLoading(targetClientRect = null) {
-  hideElement(containerSelector);
-  showElement(loadingSelector);
-  if (targetClientRect) {
-    adjustPosition(loadingSelector, targetClientRect);
-  }
+  // showRoot();
+  // hideElement(containerSelector);
+  // showElement(loadingSelector);
+  // if (targetClientRect) {
+  //   adjustPosition(loadingSelector, targetClientRect);
+  // }
 }
 
 function showContainer(targetClientRect = null) {
-  hideElement(loadingSelector);
-  showElement(containerSelector);
-  if (targetClientRect) {
-    adjustPosition(containerSelector, targetClientRect);
-  }
+  // showRoot();
+  // hideElement(loadingSelector);
+  // showElement(containerSelector);
+  // if (targetClientRect) {
+  //   adjustPosition(containerSelector, targetClientRect);
+  // }
 }
 
 function adjustPosition(selector, targetClientRect) {
@@ -74,19 +72,20 @@ function adjustPosition(selector, targetClientRect) {
 }
 
 function updateContainerContent(contentString) {
-  let result = false;
-  const container = getContainerNode();
-  if (container) {
-    // note the white space in dom,
-    // see: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace_in_the_DOM
-    if (container.firstElementChild) {
-      container.removeChild(container.firstElementChild);
-    }
-    container.insertAdjacentHTML("beforeend", contentString);
-    result = true;
-  }
+  return true;
+  // let result = false;
+  // const container = document.querySelector(containerSelector);
+  // if (container) {
+  //   // note the white space in dom,
+  //   // see: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace_in_the_DOM
+  //   if (container.firstElementChild) {
+  //     container.removeChild(container.firstElementChild);
+  //   }
+  //   container.insertAdjacentHTML("beforeend", contentString);
+  //   result = true;
+  // }
 
-  return result;
+  // return result;
 }
 
 function getTranslationContentType(contentNode) {
@@ -129,17 +128,25 @@ function convertFromHTMLContent(htmlContent) {
         });
       }
 
-      Mustache.parse(standardTemplate); // optional cache, speeds up future uses
-      convertedContent = Mustache.render(standardTemplate, {
-        tip,
-        headerWord,
-        translationList
-      });
+      // Mustache.parse(injectTemplate); // optional cache, speeds up future uses
+      convertedContent = Mustache.render(
+        injectTemplate,
+        {
+          tip,
+          headerWord,
+          translationList
+        },
+        { content: standardTemplate }
+      );
     } else if (contentType === TRANSLATION_CONTENT_MULTIWORD) {
       const translation = contentNode.querySelector(".p1-11").textContent;
-      convertedContent = Mustache.render(multiWordTemplate, {
-        translation
-      });
+      convertedContent = Mustache.render(
+        injectTemplate,
+        {
+          translation
+        },
+        { content: multiWordTemplate }
+      );
     }
   } catch (error) {
     console.error(error);
@@ -159,6 +166,7 @@ function convertFromHTMLContent(htmlContent) {
     }
   }
 
+  console.log(convertedContent);
   return convertedContent;
 }
 
@@ -271,26 +279,13 @@ function disableQueryTargetDetect() {
   queryTargetDetectInterval = null;
 }
 
-function getContainerNode() {
-  return document.querySelector(containerSelector);
-}
-
-function isEventFromContainer(event) {
-  const container = document.querySelector(containerSelector);
-  return container.contains(event.target);
-}
-
-if (document.querySelector(rootSelector)) {
+if (true) {
   enableHovering = true;
   enableQueryTargetDetect();
 
   // document.addEventListener("mousedown", startSelecting);
   document.addEventListener("selectstart", startSelecting);
   document.addEventListener("mouseup", event => {
-    if (isEventFromContainer(event)) {
-      return;
-    }
-
     const sel = window.getSelection();
     const selectedString = sel.toString().trim();
     if (selectedString) {
@@ -307,8 +302,4 @@ if (document.querySelector(rootSelector)) {
 
   document.addEventListener("scroll", updateQueryTarget);
   document.addEventListener("mousemove", updateQueryTarget);
-
-  getContainerNode().addEventListener("click", event => {
-    console.log(event.target);
-  });
 }
