@@ -4,7 +4,8 @@ const loadingSelector = `${rootSelector} .loading`;
 
 let isSelecting = false,
   enableHovering = false,
-  lastQueryTarget = QueryTarget.createNullTarget();
+  lastQueryTarget = QueryTarget.createNullTarget(),
+  lastWindowScrollY;
 
 const ERROR_INVALID_CONTENT = "INVALID_CONTENT";
 const ERROR_NETWORK_ERROR = "NETWORK_ERROR";
@@ -21,9 +22,24 @@ function hasValidSelection() {
   return isStringValid(window.getSelection().toString());
 }
 
+function isDisplay(selector) {
+  const node = document.querySelector(selector);
+  if (node && node.style.display !== "none") {
+    return true;
+  }
+  return false;
+}
+
 function isContainerShowing() {
-  const extContainer = document.querySelector(containerSelector);
-  return extContainer.style.display !== "none";
+  return isDisplay(containerSelector);
+}
+
+function isLoadingShowing() {
+  return isDisplay(loadingSelector);
+}
+
+function isUIShowing() {
+  return isContainerShowing() || isLoadingShowing();
 }
 
 function showRoot() {
@@ -195,9 +211,32 @@ function queryAndShow(queryTarget) {
   );
 }
 
-function getQueryTargetByHovering() {
-  let range = null,
+function getCurrentSelectionRange() {
+  if (window.getSelection().rangeCount > 0) {
+    return window.getSelection().getRangeAt(0);
+  } else {
+    return null;
+  }
+}
+
+function getQueryTargetByHovering(event) {
+  if (
+    event.target.nodeName === "INPUT" ||
+    event.target.nodeName === "TEXTAREA"
+  ) {
+    // skip targets Input and Textarea
+    return QueryTarget.createNullTarget();
+  }
+
+  let queryTarget = QueryTarget.createNullTarget(),
+    range = null,
     textNode = null;
+
+  const currentSelectionRange = getCurrentSelectionRange();
+  const activeElement = document.activeElement;
+  // Note: assume selectionStart equals selectionEnd
+  const activeElementEditable = !isNil(activeElement.selectionStart);
+  const activeElementSelectionStart = activeElement.selectionStart || 0;
 
   if (document.caretPositionFromPoint) {
     range = document.caretPositionFromPoint(event.clientX, event.clientY);
@@ -211,10 +250,7 @@ function getQueryTargetByHovering() {
     }
   }
 
-  let queryTarget = QueryTarget.createNullTarget();
   if (isValidTextNode(textNode)) {
-    console.log("... valid text node..");
-
     const selection = window.getSelection();
     selection.empty();
     selection.addRange(range);
@@ -225,11 +261,18 @@ function getQueryTargetByHovering() {
 
     const qstr = selection.toString().trim();
     if (qstr && inRect(rect, event.clientX, event.clientY)) {
-      queryTarget = new QueryTarget(qstr, getSeletionCR(selection));
+      queryTarget = new QueryTarget(qstr, rect);
     }
 
-    selection.setPosition(textNode, offset);
-    // textNode.parentElement.focus();
+    selection.empty();
+    if (currentSelectionRange) {
+      if (activeElement && activeElementEditable) {
+        activeElement.focus();
+        activeElement.selectionStart = activeElementSelectionStart;
+      } else {
+        selection.addRange(currentSelectionRange);
+      }
+    }
   }
 
   return queryTarget;
@@ -241,16 +284,6 @@ function startSelecting(event) {
 }
 
 // document.addEventListener("selectionchange", event => {});
-
-function updateQueryTarget(event) {
-  if (!enableHovering || isSelecting || hasValidSelection()) {
-    return;
-  }
-  const queryTarget = getQueryTargetByHovering();
-  if (!queryTarget.equalTo(lastQueryTarget)) {
-    lastQueryTarget = queryTarget;
-  }
-}
 
 const CHECK_INTERVAL = 20;
 const VALID_HOVERING_TIME = 300;
@@ -298,6 +331,8 @@ if (document.querySelector(rootSelector)) {
   // document.addEventListener("mousedown", startSelecting);
   document.addEventListener("selectstart", startSelecting);
   document.addEventListener("mouseup", event => {
+    isSelecting = false;
+
     if (isEventFromContainer(event)) {
       return;
     }
@@ -305,21 +340,51 @@ if (document.querySelector(rootSelector)) {
     const sel = window.getSelection();
     const selectedString = sel.toString().trim();
     if (selectedString) {
-      lastQueryTarget = new QueryTarget(selectedString, getSeletionCR(sel));
+      let cr = getSeletionCR(sel);
+      if (cr.width == 0) {
+        // this happens when select in textarea and input
+        // create a 10*10 rect
+        cr = new DOMRect(event.clientX, event.clientY, 10, 10);
+      }
+      lastQueryTarget = new QueryTarget(selectedString, cr);
     } else {
-      // const queryTarget = getQueryTargetByHovering();
-      // if (!queryTarget.equalTo(lastQueryTarget)) {
-      //   lastQueryTarget = queryTarget;
-      // }
+      const queryTarget = getQueryTargetByHovering(event);
+      if (!queryTarget.equalTo(lastQueryTarget)) {
+        lastQueryTarget = queryTarget;
+      }
     }
-
-    isSelecting = false;
   });
 
-  document.addEventListener("scroll", updateQueryTarget);
-  document.addEventListener("mousemove", updateQueryTarget);
+  document.addEventListener("scroll", event => {
+    if (hasValidSelection() && isUIShowing()) {
+      // move with the scroll
+      const sel = window.getSelection();
+      let cr = getSeletionCR(sel);
+      if (cr.width !== 0) {
+        showContainer(cr);
+      } else {
+        // for selections in textarea/input
+        hideAll();
+      }
+    } else {
+      hideAll();
+    }
+  });
+
+  document.addEventListener("mousemove", event => {
+    if (enableHovering && !isSelecting && !hasValidSelection()) {
+      const queryTarget = getQueryTargetByHovering(event);
+      if (!queryTarget.equalTo(lastQueryTarget)) {
+        lastQueryTarget = queryTarget;
+      }
+    }
+  });
 
   getContainerNode().addEventListener("click", event => {
-    console.log(event.target);
+    // TODO
+  });
+
+  document.addEventListener("select", event => {
+    // this event fires from textarea and input
   });
 }
