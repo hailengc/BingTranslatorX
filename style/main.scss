@@ -11,9 +11,9 @@
   }
 
   .container {
+    z-index: 999999999;
     border: 1px solid grey;
     position: fixed;
-    z-index: 999999;
     font-family: Arial, Helvetica, sans-serif;
     color: black;
     background-color: skyblue;
@@ -81,6 +81,6 @@
 
   .loading {
     position: fixed;
-    z-index: 999999;
+    z-index: 999999999;
   }
 }

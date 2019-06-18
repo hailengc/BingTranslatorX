@@ -59,16 +59,20 @@ function hideAll() {
 }
 
 function showLoading(targetClientRect = null) {
-  hideElement(containerSelector);
-  showElement(loadingSelector);
+  if (!isLoadingShowing()) {
+    hideElement(containerSelector);
+    showElement(loadingSelector);
+  }
   if (targetClientRect) {
     adjustPosition(loadingSelector, targetClientRect);
   }
 }
 
 function showContainer(targetClientRect = null) {
-  hideElement(loadingSelector);
-  showElement(containerSelector);
+  if (!isContainerShowing()) {
+    hideElement(loadingSelector);
+    showElement(containerSelector);
+  }
   if (targetClientRect) {
     adjustPosition(containerSelector, targetClientRect);
   }
