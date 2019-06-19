@@ -91,7 +91,7 @@ function adjustPosition(selector, targetClientRect) {
 
   const horizontalOffset = targetClientRect.left + extWidth - docWidth;
   if (horizontalOffset > 0) {
-    let left = targetClientRect.left - horizontalOffset;
+    let left = targetClientRect.left - horizontalOffset - 3;
     left = Math.max(left, 3);
     element.style.left = left + "px";
     // element.style.left
@@ -215,7 +215,7 @@ function queryAndShow(queryTarget) {
       if (convertedContent && updateContainerContent(convertedContent)) {
         // check if still the same queryTarget
         if (queryTarget.equalTo(lastQueryTarget)) {
-          showContainer(targetClientRect);
+          showContainer(queryTarget.targetClientRect);
         }
       }
     }
@@ -375,8 +375,18 @@ if (document.querySelector(rootSelector)) {
       // move with the scroll
       const sel = window.getSelection();
       let cr = getSeletionCR(sel);
+
+      // update last query target's rect
+      if (lastQueryTarget.isValid) {
+        lastQueryTarget.updateClientRect(cr);
+      }
+
       if (cr.width !== 0) {
-        showContainer(cr);
+        if (isContainerShowing()) {
+          showContainer(cr);
+        } else if (isLoadingShowing()) {
+          showLoading(cr);
+        }
       } else {
         // for selections in textarea/input
         hideAll();

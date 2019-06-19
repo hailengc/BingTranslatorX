@@ -2,9 +2,7 @@ const injectedTemplate = `
 <div id="__EXT_BT_ROOT__" style="display: block">
   <div class="container" style="display: none;"></div>
   <div class="loading" style="display: none;">
-    <img src="${chrome.runtime.getURL(
-      "images/loading.svg"
-    )}"  style="height: 30px;" />
+    <img src="${chrome.runtime.getURL("images/loading.svg")}"    />
   </div>
 </div>
 `;

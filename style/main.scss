@@ -81,5 +81,9 @@
   .loading {
     position: fixed;
     z-index: 999999999;
+
+    img {
+      height: 30px !important;
+    }
   }
 }

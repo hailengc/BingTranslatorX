@@ -68,3 +68,6 @@
   position: fixed;
   z-index: 999999999;
 }
+#__EXT_BT_ROOT__ .loading img {
+  height: 30px !important;
+}
