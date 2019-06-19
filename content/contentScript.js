@@ -328,6 +328,10 @@ function isEventFromContainer(event) {
   return container.contains(event.target);
 }
 
+function isEventTargetIgnore(event) {
+  return event.target.nodeName === "INPUT";
+}
+
 if (document.querySelector(rootSelector)) {
   enableHovering = true;
   enableQueryTargetDetect();
@@ -337,7 +341,7 @@ if (document.querySelector(rootSelector)) {
   document.addEventListener("mouseup", event => {
     isSelecting = false;
 
-    if (isEventFromContainer(event)) {
+    if (isEventFromContainer(event) || isEventTargetIgnore(event)) {
       return;
     }
 
