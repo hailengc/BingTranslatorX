@@ -85,12 +85,21 @@ function adjustPosition(selector, targetClientRect) {
   const extWidth = element.clientWidth;
   const extHeight = element.clientHeight;
 
-  const horizontalOffset = targetClientRect.left + extWidth - docWidth;
-  if (horizontalOffset > 0) {
-    element.style.left = targetClientRect.left - horizontalOffset + "px";
-  } else {
-    element.style.left = targetClientRect.left + "px";
+  element.style.left = targetClientRect.left + "px";
+
+  if (targetClientRect.width > 500) {
+    element.style.maxWidth = targetClientRect.width + "px";
   }
+
+  // const horizontalOffset = targetClientRect.left + extWidth - docWidth;
+  // if (horizontalOffset > 0) {
+  //   let left = targetClientRect.left - horizontalOffset;
+  //   left = Math.max(left, 3);
+  //   element.style.left = left + "px";
+  //   // element.style.left
+  // } else {
+  //   element.style.left = targetClientRect.left + "px";
+  // }
 
   const verticalOffset = targetClientRect.bottom + extHeight - windowHeight;
   if (verticalOffset > 0) {
