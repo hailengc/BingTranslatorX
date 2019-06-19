@@ -52,6 +52,10 @@ function hideRoot() {
   rootNode.style.left = -999;
 }
 
+function delay(timeout, func) {
+  setTimeout(func, timeout);
+}
+
 function hideAll() {
   hideRoot();
   hideElement(containerSelector);
@@ -94,7 +98,6 @@ function adjustPosition(selector, targetClientRect) {
     let left = targetClientRect.left - horizontalOffset - 3;
     left = Math.max(left, 3);
     element.style.left = left + "px";
-    // element.style.left
   } else {
     element.style.left = targetClientRect.left + "px";
   }
@@ -291,7 +294,6 @@ function getQueryTargetByHovering(event) {
 
 function startSelecting(event) {
   isSelecting = true;
-  hideAll();
 }
 
 // document.addEventListener("selectionchange", event => {});
@@ -405,8 +407,18 @@ if (document.querySelector(rootSelector)) {
     }
   });
 
-  getContainerNode().addEventListener("click", event => {
+  getContainerNode().addEventListener("mouseup", event => {
     // TODO
+    console.log("... mouseup in container...");
+
+    event.stopPropagation();
+  });
+
+  getContainerNode().addEventListener("mouseover", event => {
+    // TODO
+    console.log("... hover in container...");
+
+    event.stopPropagation();
   });
 
   document.addEventListener("select", event => {
