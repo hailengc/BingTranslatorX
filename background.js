@@ -47,7 +47,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // send response async
     return true;
   } else if (request.action === "createTab") {
-    // TODO: insert tab besides current tab
-    chrome.tabs.create({ url: request.url });
+    chrome.tabs.query(
+      {
+        active: true
+      },
+      tab => {
+        chrome.tabs.create({ url: request.url, index: tab[0].index + 1 });
+      }
+    );
   }
 });
