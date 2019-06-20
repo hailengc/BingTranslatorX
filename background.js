@@ -1,7 +1,5 @@
 chrome.runtime.onInstalled.addListener(function() {
-  chrome.storage.sync.set({ color: "#3aa757" }, function() {
-    console.log("The color is green.");
-  });
+  chrome.storage.sync.set({ color: "#3aa757" }, function() {});
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([
       {
@@ -16,7 +14,8 @@ chrome.runtime.onInstalled.addListener(function() {
   });
 });
 
-const queryBaseUrl = "https://cn.bing.com/dict/search?mkt=zh-cn&q=";
+const queryHost = "https://cn.bing.com";
+const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "query") {
@@ -52,7 +51,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         active: true
       },
       tab => {
-        chrome.tabs.create({ url: request.url, index: tab[0].index + 1 });
+        chrome.tabs.create({
+          url: queryHost + request.url,
+          index: tab[0].index + 1
+        });
       }
     );
   }

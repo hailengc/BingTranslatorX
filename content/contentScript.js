@@ -179,8 +179,6 @@ function convertFromHTMLContent(htmlContent) {
       });
     }
   } catch (error) {
-    console.error(error);
-
     if (error.message === ERROR_NETWORK_ERROR) {
       convertedContent = Mustache.render(noContentTemplate, {
         message: "Sorry, 似乎有网络错误"
@@ -238,7 +236,7 @@ function getQueryTargetByHovering(event) {
     event.target.nodeName === "INPUT" ||
     event.target.nodeName === "TEXTAREA"
   ) {
-    // skip targets Input and Textarea
+    // skip hovering targets: Input and Textarea
     return QueryTarget.createNullTarget();
   }
 
@@ -341,8 +339,11 @@ function isEventFromContainer(event) {
   return container.contains(event.target);
 }
 
-function isEventTargetIgnorable(event) {
-  return event.target.nodeName === "INPUT";
+function isTargetIgnorable(targetNode) {
+  return (
+    targetNode.nodeName === "INPUT" ||
+    document.activeElement.nodeName == "INPUT"
+  );
 }
 
 function openNewTab(url) {
@@ -358,7 +359,7 @@ if (document.querySelector(rootSelector)) {
   document.addEventListener("mouseup", event => {
     isSelecting = false;
 
-    if (isEventFromContainer(event) || isEventTargetIgnorable(event)) {
+    if (isEventFromContainer(event) || isTargetIgnorable(event.target)) {
       return;
     }
 
@@ -420,35 +421,24 @@ if (document.querySelector(rootSelector)) {
     }
   });
 
-  const queryUrlTestExp = /^\/dict\/search\?.*$/;
-  const queryHost = "https://cn.bing.com";
-  getContainerNode().addEventListener("click", event => {
-    // TODO
-    console.log("... mouseup in container...");
-    console.log();
+  document.addEventListener("select", event => {
+    // this event fires from textarea and input
+  });
 
+  const queryUrlTestExp = /^\/dict\/search\?.*$/;
+  getContainerNode().addEventListener("click", event => {
     const target = event.target;
     if (target.nodeName === "A") {
-      console.log("a link is clicked.");
       const href = target.getAttribute("href");
       if (href && queryUrlTestExp.test(href)) {
-        // chrome.tabs.create({ url: queryHost + href });
-        openNewTab(queryHost + href);
+        openNewTab(href);
       }
     }
-
     event.preventDefault();
     event.stopPropagation();
   });
 
   getContainerNode().addEventListener("mouseover", event => {
-    // TODO
-    console.log("... hover in container...");
-
-    event.stopPropagation();
-  });
-
-  document.addEventListener("select", event => {
-    // this event fires from textarea and input
+    // TODO:
   });
 }

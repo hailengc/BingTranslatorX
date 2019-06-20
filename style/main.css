@@ -35,6 +35,7 @@
 }
 #__EXT_BT_ROOT__ .container .content ul.translation-list li {
   display: table-row;
+  line-height: 15px;
 }
 #__EXT_BT_ROOT__ .container .content ul.translation-list li > span {
   display: table-cell;
@@ -53,6 +54,10 @@
 #__EXT_BT_ROOT__ .container .content ul.translation-list li .translation {
   font-size: 14px;
   font-weight: bold;
+}
+#__EXT_BT_ROOT__ .container .content ul.translation-list li .translation a {
+  color: blue;
+  text-decoration-line: underline;
 }
 #__EXT_BT_ROOT__ .container .no-content {
   padding: 3px;

@@ -40,6 +40,7 @@
 
         li {
           display: table-row;
+          line-height: 15px;
 
           > span {
             display: table-cell;
@@ -60,6 +61,11 @@
           .translation {
             font-size: 14px;
             font-weight: bold;
+
+            a {
+              color: blue;
+              text-decoration-line: underline;
+            }
           }
         }
       }
