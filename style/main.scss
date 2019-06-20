@@ -40,7 +40,7 @@
 
         li {
           display: table-row;
-          line-height: 15px;
+          line-height: 15px !important;
 
           > span {
             display: table-cell;

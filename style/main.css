@@ -35,7 +35,7 @@
 }
 #__EXT_BT_ROOT__ .container .content ul.translation-list li {
   display: table-row;
-  line-height: 15px;
+  line-height: 15px !important;
 }
 #__EXT_BT_ROOT__ .container .content ul.translation-list li > span {
   display: table-cell;
