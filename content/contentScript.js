@@ -293,7 +293,11 @@ function getQueryTargetByHovering(event) {
 }
 
 function startSelecting(event) {
+  if (isEventFromContainer(event)) {
+    return;
+  }
   isSelecting = true;
+  hideAll();
 }
 
 // document.addEventListener("selectionchange", event => {});
@@ -337,8 +341,12 @@ function isEventFromContainer(event) {
   return container.contains(event.target);
 }
 
-function isEventTargetIgnore(event) {
+function isEventTargetIgnorable(event) {
   return event.target.nodeName === "INPUT";
+}
+
+function openNewTab(url) {
+  chrome.runtime.sendMessage({ action: "createTab", url });
 }
 
 if (document.querySelector(rootSelector)) {
@@ -350,7 +358,7 @@ if (document.querySelector(rootSelector)) {
   document.addEventListener("mouseup", event => {
     isSelecting = false;
 
-    if (isEventFromContainer(event) || isEventTargetIgnore(event)) {
+    if (isEventFromContainer(event) || isEventTargetIgnorable(event)) {
       return;
     }
 
@@ -399,7 +407,12 @@ if (document.querySelector(rootSelector)) {
   });
 
   document.addEventListener("mousemove", event => {
-    if (enableHovering && !isSelecting && !hasValidSelection()) {
+    if (
+      enableHovering &&
+      !isSelecting &&
+      !hasValidSelection() &&
+      !isEventFromContainer(event)
+    ) {
       const queryTarget = getQueryTargetByHovering(event);
       if (!queryTarget.equalTo(lastQueryTarget)) {
         lastQueryTarget = queryTarget;
@@ -407,10 +420,24 @@ if (document.querySelector(rootSelector)) {
     }
   });
 
-  getContainerNode().addEventListener("mouseup", event => {
+  const queryUrlTestExp = /^\/dict\/search\?.*$/;
+  const queryHost = "https://cn.bing.com";
+  getContainerNode().addEventListener("click", event => {
     // TODO
     console.log("... mouseup in container...");
+    console.log();
 
+    const target = event.target;
+    if (target.nodeName === "A") {
+      console.log("a link is clicked.");
+      const href = target.getAttribute("href");
+      if (href && queryUrlTestExp.test(href)) {
+        // chrome.tabs.create({ url: queryHost + href });
+        openNewTab(queryHost + href);
+      }
+    }
+
+    event.preventDefault();
     event.stopPropagation();
   });
 

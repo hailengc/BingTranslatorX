@@ -2,7 +2,7 @@
   "name": "BingTranslator",
   "version": "1.0",
   "description": "A translator use Bing dict.",
-  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "permissions": ["tabs", "activeTab", "declarativeContent", "storage"],
   "options_page": "options.html",
   "background": {
     "scripts": ["background.js"],
