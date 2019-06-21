@@ -9,18 +9,23 @@ const standardTemplate = `
     </div>
     {{#pron}}
     <div class="pron">
-
         {{#pron.prUS}}
-        <div class="pr">
+        <div class="pr prUS">
             <span class="pr-country">{{ pron.prUS }}</span>
+            {{ #pron.audioUS}}
             <span class="volume">{{ >volume }}</span>
+            <audio src="{{pron.audioUS}}" class="audioUS"></audio>
+            {{ /pron.audioUS}}
         </div>
         {{/pron.prUS}}
 
         {{#pron.prEN}}
-        <div class="pr">
+        <div class="pr prEN">
             <span class="pr-country pr-en">{{ pron.prEN }}</span>
+            {{ #pron.audioEN}}
             <span class="volume">{{ >volume }}</span>
+            <audio src="{{pron.audioEN}}" class="audioEN"></audio>
+            {{ /pron.audioEN}}
         </div>
         {{/pron.prEN}}
     </div>

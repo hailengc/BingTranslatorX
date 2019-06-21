@@ -136,6 +136,21 @@ function getTranslationContentType(contentNode) {
   }
 }
 
+const audioUrlRegexp = /https.*\.mp3/;
+function getAudioUrl(contentNode, type) {
+  try {
+    const ss = type === "US" ? ".hd_prUS" : ".hd_pr";
+    const hdNode = contentNode.querySelector(`${ss} + .hd_tf`);
+    const linkNode = hdNode.querySelector("a");
+    const clickString = linkNode.getAttribute("onclick");
+    return clickString.match(audioUrlRegexp)[0];
+  } catch (error) {
+    console.error(error);
+
+    return null;
+  }
+}
+
 function convertFromHTMLContent(htmlContent) {
   let convertedContent = null;
   try {
@@ -162,9 +177,12 @@ function convertFromHTMLContent(htmlContent) {
       const pron = pronNode
         ? {
             prUS: pronNode.querySelector(".hd_prUS").textContent,
-            prEN: pronNode.querySelector(".hd_pr").textContent
+            audioUS: getAudioUrl(pronNode, "US"),
+            prEN: pronNode.querySelector(".hd_pr").textContent,
+            audioEN: getAudioUrl(pronNode, "EN")
           }
         : null;
+
       // get translation
       const translationList = [];
       const ulNode = contentNode.querySelector("ul");
@@ -199,6 +217,8 @@ function convertFromHTMLContent(htmlContent) {
       });
     }
   } catch (error) {
+    console.error(error);
+
     if (error.message === ERROR_NETWORK_ERROR) {
       convertedContent = Mustache.render(noContentTemplate, {
         message: "Sorry, 似乎有网络错误"
@@ -370,6 +390,24 @@ function openNewTab(url) {
   chrome.runtime.sendMessage({ action: "createTab", url });
 }
 
+function findTargetAudio(targetNode) {
+  const containerNode = getContainerNode();
+  const usv = containerNode.querySelector(".prUS .volume");
+  if (usv && usv.contains(targetNode)) {
+    return containerNode.querySelector(".audioUS");
+  }
+  const env = containerNode.querySelector(".prEN .volume");
+  if (env && env.contains(targetNode)) {
+    return containerNode.querySelector(".audioEN");
+  }
+  return null;
+}
+
+function playAudioIfNeed(targetNode) {
+  const audioNode = findTargetAudio(targetNode);
+  audioNode && audioNode.play && audioNode.play();
+}
+
 if (document.querySelector(rootSelector)) {
   enableHovering = true;
   enableQueryTargetDetect();
@@ -446,6 +484,7 @@ if (document.querySelector(rootSelector)) {
   });
 
   const queryUrlTestExp = /^\/dict\/search\?.*$/;
+
   getContainerNode().addEventListener("click", event => {
     const target = event.target;
     if (target.nodeName === "A") {
@@ -453,12 +492,15 @@ if (document.querySelector(rootSelector)) {
       if (href && queryUrlTestExp.test(href)) {
         openNewTab(href);
       }
+    } else {
+      playAudioIfNeed(target);
     }
     event.preventDefault();
     event.stopPropagation();
   });
 
   getContainerNode().addEventListener("mouseover", event => {
-    // TODO:
+    playAudioIfNeed(event.target);
+    event.stopPropagation();
   });
 }
