@@ -29,6 +29,25 @@
           font-size: 28px;
           font-weight: 500;
         }
+
+        .pron {
+          color: #777777;
+          margin-top: 5px;
+          .pr {
+            display: inline-block;
+            .volume {
+              margin-left: 4px;
+              cursor: pointer;
+              :hover {
+                fill: yellow;
+              }
+            }
+
+            .pr-en {
+              margin-left: 10px;
+            }
+          }
+        }
       }
 
       ul.translation-list {

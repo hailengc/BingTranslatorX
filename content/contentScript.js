@@ -150,10 +150,22 @@ function convertFromHTMLContent(htmlContent) {
     if (contentType === TRANSLATION_CONTENT_INVALID) {
       throw new Error(ERROR_INVALID_CONTENT);
     } else if (contentType === TRANSLATION_CONTENT_NORMAL) {
+      // get tip
       const tipNode = contentNode.querySelector(".in_tip");
       const tip = tipNode && tipNode.textContent;
 
+      // get head
       const headerWord = contentNode.querySelector("#headword").textContent;
+
+      // get pronunciation
+      const pronNode = contentNode.querySelector(".hd_p1_1");
+      const pron = pronNode
+        ? {
+            prUS: pronNode.querySelector(".hd_prUS").textContent,
+            prEN: pronNode.querySelector(".hd_pr").textContent
+          }
+        : null;
+      // get translation
       const translationList = [];
       const ulNode = contentNode.querySelector("ul");
       for (const li of ulNode.children) {
@@ -167,11 +179,19 @@ function convertFromHTMLContent(htmlContent) {
       }
 
       Mustache.parse(standardTemplate); // optional cache, speeds up future uses
-      convertedContent = Mustache.render(standardTemplate, {
-        tip,
-        headerWord,
-        translationList
-      });
+      convertedContent = Mustache.render(
+        standardTemplate,
+        {
+          tip,
+          headerWord,
+          translationList,
+          hasPhonetic: true,
+          pron
+        },
+        {
+          volume: volumeTemplate
+        }
+      );
     } else if (contentType === TRANSLATION_CONTENT_MULTIWORD) {
       const translation = contentNode.querySelector(".p1-11").textContent;
       convertedContent = Mustache.render(multiWordTemplate, {

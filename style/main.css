@@ -26,6 +26,23 @@
   font-size: 28px;
   font-weight: 500;
 }
+#__EXT_BT_ROOT__ .container .content .header .pron {
+  color: #777777;
+  margin-top: 5px;
+}
+#__EXT_BT_ROOT__ .container .content .header .pron .pr {
+  display: inline-block;
+}
+#__EXT_BT_ROOT__ .container .content .header .pron .pr .volume {
+  margin-left: 4px;
+  cursor: pointer;
+}
+#__EXT_BT_ROOT__ .container .content .header .pron .pr .volume :hover {
+  fill: yellow;
+}
+#__EXT_BT_ROOT__ .container .content .header .pron .pr .pr-en {
+  margin-left: 10px;
+}
 #__EXT_BT_ROOT__ .container .content ul.translation-list {
   max-width: 300px;
   list-style-type: none;
