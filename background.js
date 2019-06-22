@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       tab => {
         chrome.tabs.create({
-          url: queryHost + request.url,
+          url: request.url,
           index: tab[0].index + 1
         });
       }

@@ -149,7 +149,11 @@ function getAudioUrl(contentNode, type) {
   }
 }
 
-function convertFromHTMLContent(htmlContent) {
+const queryUrlTestExp = /^\/dict\/search\?.*$/;
+const queryHost = "https://cn.bing.com";
+const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
+
+function convertFromHTMLContent(htmlContent, queryString) {
   let convertedContent = null;
   try {
     if (htmlContent === ERROR_NETWORK_ERROR) {
@@ -163,6 +167,9 @@ function convertFromHTMLContent(htmlContent) {
     if (contentType === TRANSLATION_CONTENT_INVALID) {
       throw new Error(ERROR_INVALID_CONTENT);
     } else if (contentType === TRANSLATION_CONTENT_NORMAL) {
+      // detail url
+      const detailUrl = queryBaseUrl + encodeURIComponent(queryString);
+
       // get tip
       const tipNode = contentNode.querySelector(".in_tip");
       const tip = tipNode && tipNode.textContent;
@@ -198,6 +205,7 @@ function convertFromHTMLContent(htmlContent) {
       convertedContent = Mustache.render(
         standardTemplate,
         {
+          detailUrl,
           tip,
           headerWord,
           translationList,
@@ -248,7 +256,7 @@ function queryAndShow(queryTarget) {
     response => {
       const htmlContent =
         response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
-      const convertedContent = convertFromHTMLContent(htmlContent);
+      const convertedContent = convertFromHTMLContent(htmlContent, queryString);
       if (convertedContent && updateContainerContent(convertedContent)) {
         // check if still the same queryTarget
         if (queryTarget.equalTo(lastQueryTarget)) {
@@ -479,14 +487,16 @@ if (document.querySelector(rootSelector)) {
     // this event fires from textarea and input
   });
 
-  const queryUrlTestExp = /^\/dict\/search\?.*$/;
-
   getContainerNode().addEventListener("click", event => {
     const target = event.target;
     if (target.nodeName === "A") {
       const href = target.getAttribute("href");
-      if (href && queryUrlTestExp.test(href)) {
-        openNewTab(href);
+      if (href) {
+        if (queryUrlTestExp.test(href)) {
+          openNewTab(queryHost + href);
+        } else {
+          openNewTab(href);
+        }
       }
     } else {
       playAudioIfNeed(target);

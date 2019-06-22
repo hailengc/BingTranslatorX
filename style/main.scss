@@ -21,6 +21,18 @@
     .content {
       .header {
         padding: 5px;
+        .detailLink {
+          font-size: 11px;
+          float: right;
+          line-height: 20px;
+          margin-left: 6px;
+
+          a {
+            text-decoration: none;
+            color: #777777;
+          }
+        }
+
         .tip {
           font-size: 14px;
           background-color: #f9f5dd;

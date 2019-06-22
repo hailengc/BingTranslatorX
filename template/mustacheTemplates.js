@@ -1,8 +1,9 @@
 const standardTemplate = `
 <div class="content">
   <div class="header">
+    <span class="detailLink"><a href={{ detailUrl }} >详细释义</a></span>
     {{#tip}}
-    <div class="tip">{{ tip }}</div>
+    <span class="tip">{{ tip }}</span>
     {{/tip}}
     <div class="word">
         <span> {{ headerWord }} </span>
