@@ -145,8 +145,6 @@ function getAudioUrl(contentNode, type) {
     const clickString = linkNode.getAttribute("onclick");
     return clickString.match(audioUrlRegexp)[0];
   } catch (error) {
-    console.error(error);
-
     return null;
   }
 }
@@ -170,15 +168,15 @@ function convertFromHTMLContent(htmlContent) {
       const tip = tipNode && tipNode.textContent;
 
       // get head
-      const headerWord = contentNode.querySelector("#headword").textContent;
+      const headerWord = getTextContent(contentNode.querySelector("#headword"));
 
       // get pronunciation
       const pronNode = contentNode.querySelector(".hd_p1_1");
       const pron = pronNode
         ? {
-            prUS: pronNode.querySelector(".hd_prUS").textContent,
+            prUS: getTextContent(pronNode.querySelector(".hd_prUS")),
             audioUS: getAudioUrl(pronNode, "US"),
-            prEN: pronNode.querySelector(".hd_pr").textContent,
+            prEN: getTextContent(pronNode.querySelector(".hd_pr")),
             audioEN: getAudioUrl(pronNode, "EN")
           }
         : null;
@@ -187,8 +185,8 @@ function convertFromHTMLContent(htmlContent) {
       const translationList = [];
       const ulNode = contentNode.querySelector("ul");
       for (const li of ulNode.children) {
-        const property = li.querySelector(".pos").textContent;
-        const translation = li.querySelector(".def").innerHTML;
+        const property = getTextContent(li.querySelector(".pos"));
+        const translation = getInnerHTML(li.querySelector(".def"));
         translationList.push({
           property,
           translation,
@@ -217,8 +215,6 @@ function convertFromHTMLContent(htmlContent) {
       });
     }
   } catch (error) {
-    console.error(error);
-
     if (error.message === ERROR_NETWORK_ERROR) {
       convertedContent = Mustache.render(noContentTemplate, {
         message: "Sorry, 似乎有网络错误"
