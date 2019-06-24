@@ -1,7 +1,7 @@
 {
-  "name": "BingTranslator",
+  "name": "BingTranslatorX",
   "version": "1.0",
-  "description": "A translator use Bing dict.",
+  "description": "An English-Chinese/Chinese-English translator based on Bing dict.",
   "permissions": ["tabs", "activeTab", "declarativeContent", "storage"],
   "options_page": "options.html",
   "background": {

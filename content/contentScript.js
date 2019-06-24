@@ -498,15 +498,8 @@ if (document.querySelector(rootSelector)) {
           openNewTab(href);
         }
       }
-    } else {
-      playAudioIfNeed(target);
     }
     event.preventDefault();
-    event.stopPropagation();
-  });
-
-  getContainerNode().addEventListener("mouseover", event => {
-    playAudioIfNeed(event.target);
     event.stopPropagation();
   });
 }
