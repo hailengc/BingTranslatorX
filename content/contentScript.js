@@ -3,9 +3,8 @@ const containerSelector = `${rootSelector} .container`;
 const loadingSelector = `${rootSelector} .loading`;
 
 let isSelecting = false,
-  enableHovering = false,
   lastQueryTarget = QueryTarget.createNullTarget(),
-  lastWindowScrollY;
+  extSetting = null;
 
 const ERROR_INVALID_CONTENT = "INVALID_CONTENT";
 const ERROR_NETWORK_ERROR = "NETWORK_ERROR";
@@ -27,6 +26,26 @@ function isDisplay(selector) {
   if (node && node.style.display !== "none") {
     return true;
   }
+  return false;
+}
+
+function fetchExtSetting() {
+  return new Promise((res, rej) => {
+    chrome.storage.sync.get(null, result => {
+      res(result);
+    });
+  });
+}
+
+function isHoveringEnable(event) {
+  if (extSetting.enable && extSetting.hover.enable) {
+    if (extSetting.hover.key) {
+      return event[extSetting.hover.key];
+    } else {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -80,6 +99,9 @@ function showContainer(targetClientRect = null) {
   if (targetClientRect) {
     adjustPosition(containerSelector, targetClientRect);
   }
+
+  getContainerNode().style.backgroundColor =
+    extSetting.container.backgroundColor;
 }
 
 function adjustPosition(selector, targetClientRect) {
@@ -242,6 +264,10 @@ function convertFromHTMLContent(htmlContent, queryString) {
 }
 
 function queryAndShow(queryTarget) {
+  if (!extSetting.enable) {
+    return;
+  }
+
   if (queryTarget.isActive || !queryTarget.targetString) {
     return;
   }
@@ -412,108 +438,117 @@ function playAudioIfNeed(targetNode) {
   audioNode && audioNode.play && audioNode.play();
 }
 
-if (document.querySelector(rootSelector)) {
-  enableHovering = true;
-  enableQueryTargetDetect();
+function init() {
+  if (document.querySelector(rootSelector)) {
+    enableQueryTargetDetect();
 
-  // document.addEventListener("mousedown", startSelecting);
-  document.addEventListener("selectstart", startSelecting);
-  document.addEventListener("mouseup", event => {
-    isSelecting = false;
+    document.addEventListener("selectstart", startSelecting);
 
-    if (isEventFromContainer(event) || isTargetIgnorable(event.target)) {
-      return;
-    }
+    document.addEventListener("mouseup", event => {
+      isSelecting = false;
 
-    const sel = window.getSelection();
-    const selectedString = sel.toString().trim();
-    if (selectedString) {
-      let cr = getSeletionCR(sel);
-      if (cr.width == 0) {
-        // this happens when select in textarea and input
-        // create a 10*10 rect
-        cr = new DOMRect(event.clientX, event.clientY, 10, 10);
+      if (isEventFromContainer(event) || isTargetIgnorable(event.target)) {
+        return;
       }
-      lastQueryTarget = new QueryTarget(selectedString, cr);
-    } else {
-      const queryTarget = getQueryTargetByHovering(event);
-      if (!queryTarget.equalTo(lastQueryTarget)) {
-        lastQueryTarget = queryTarget;
-      }
-    }
-  });
 
-  document.addEventListener("scroll", event => {
-    if (hasValidSelection() && isUIShowing()) {
-      // move with the scroll
       const sel = window.getSelection();
-      let cr = getSeletionCR(sel);
-
-      // update last query target's rect
-      if (lastQueryTarget.isValid) {
-        lastQueryTarget.updateClientRect(cr);
+      const selectedString = sel.toString().trim();
+      if (selectedString) {
+        let cr = getSeletionCR(sel);
+        if (cr.width == 0) {
+          // this happens when select in textarea and input
+          // create a 10*10 rect
+          cr = new DOMRect(event.clientX, event.clientY, 10, 10);
+        }
+        lastQueryTarget = new QueryTarget(selectedString, cr);
+      } else {
+        const queryTarget = getQueryTargetByHovering(event);
+        if (!queryTarget.equalTo(lastQueryTarget)) {
+          lastQueryTarget = queryTarget;
+        }
       }
+    });
 
-      if (cr.width !== 0) {
-        if (isContainerShowing()) {
-          showContainer(cr);
-        } else if (isLoadingShowing()) {
-          showLoading(cr);
+    document.addEventListener("scroll", event => {
+      if (hasValidSelection() && isUIShowing()) {
+        // move with the scroll
+        const sel = window.getSelection();
+        let cr = getSeletionCR(sel);
+
+        // update last query target's rect
+        if (lastQueryTarget.isValid) {
+          lastQueryTarget.updateClientRect(cr);
+        }
+
+        if (cr.width !== 0) {
+          if (isContainerShowing()) {
+            showContainer(cr);
+          } else if (isLoadingShowing()) {
+            showLoading(cr);
+          }
+        } else {
+          // for selections in textarea/input
+          hideAll();
         }
       } else {
-        // for selections in textarea/input
         hideAll();
       }
-    } else {
-      hideAll();
-    }
-  });
+    });
 
-  document.addEventListener("mousemove", event => {
-    if (
-      enableHovering &&
-      !isSelecting &&
-      !hasValidSelection() &&
-      !isEventFromContainer(event)
-    ) {
-      const queryTarget = getQueryTargetByHovering(event);
-      if (!queryTarget.equalTo(lastQueryTarget)) {
-        lastQueryTarget = queryTarget;
-      }
-    }
-  });
-
-  document.addEventListener("select", event => {
-    // this event fires from textarea and input
-  });
-
-  getContainerNode().addEventListener("click", event => {
-    const target = event.target;
-    if (target.nodeName === "A") {
-      const href = target.getAttribute("href");
-      if (href) {
-        if (queryUrlTestExp.test(href)) {
-          openNewTab(queryHost + href);
-        } else {
-          openNewTab(href);
+    document.addEventListener("mousemove", event => {
+      if (
+        isHoveringEnable(event) &&
+        !isSelecting &&
+        !hasValidSelection() &&
+        !isEventFromContainer(event)
+      ) {
+        const queryTarget = getQueryTargetByHovering(event);
+        if (!queryTarget.equalTo(lastQueryTarget)) {
+          lastQueryTarget = queryTarget;
         }
       }
-    }
-    event.preventDefault();
-    event.stopPropagation();
-  });
+    });
+
+    // document.addEventListener("select", event => {
+    //   // this event fires from textarea and input
+    // });
+
+    getContainerNode().addEventListener("click", event => {
+      const target = event.target;
+      if (target.nodeName === "A") {
+        const href = target.getAttribute("href");
+        if (href) {
+          if (queryUrlTestExp.test(href)) {
+            openNewTab(queryHost + href);
+          } else {
+            openNewTab(href);
+          }
+        }
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      for (const key in changes) {
+        const storageChange = changes[key];
+        // console.log(
+        //   'Storage key "%s" in namespace "%s" changed. ' +
+        //     'Old value was "%s", new value is "%s".',
+        //   key,
+        //   namespace,
+        //   storageChange.oldValue,
+        //   storageChange.newValue
+        // );
+        extSetting[key] = storageChange.newValue;
+      }
+    });
+  }
 }
 
-chrome.storage.onChanged.addListener(function(changes, namespace) {
-  for (var key in changes) {
-    var storageChange = changes[key];
-    console.log(
-      'Storage key "%s" in namespace "%s" changed. ' +
-        'Old value was "%s", new value is "%s".',
-      key,
-      namespace,
-      storageChange.oldValue,
-      storageChange.newValue
-    );
-  }
+fetchExtSetting().then(setting => {
+  extSetting = setting;
+  console.log(extSetting);
+
+  init();
 });

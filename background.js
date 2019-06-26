@@ -3,8 +3,15 @@ chrome.runtime.onInstalled.addListener(function() {
 
   chrome.storage.sync.set({
     enable: true,
-    hoverKey: "none",
-    containerColor: "#87ceeb"
+    hover: {
+      enable: true,
+      key: ""
+    },
+    container: {
+      // default skyblue
+      // backgroundColor: "#87ceeb"
+      backgroundColor: "red"
+    }
   });
 });
 
