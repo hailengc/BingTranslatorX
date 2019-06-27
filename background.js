@@ -1,23 +1,20 @@
-chrome.runtime.onInstalled.addListener(function() {
-  console.log(".... oninstalled called " + new Date().toISOString());
-
-  chrome.storage.sync.set({
+const defaultSetting = {
+  enable: true,
+  hover: {
     enable: true,
-    hover: {
-      enable: true,
-      key: ""
-    },
-    container: {
-      // default skyblue
-      backgroundColor: "lightgrey"
-      // backgroundColor: "white"
-      // backgroundColor: "#84e184"
-    }
-  });
-});
+    key: ""
+  },
+  container: {
+    backgroundColor: "skyblue"
+  }
+};
 
 const queryHost = "https://cn.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.set(defaultSetting);
+});
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "query") {

@@ -16,8 +16,8 @@
 
         <div class="body">
           <div class="enableExt">
-            <input type="checkbox" id="enableExt" />
-            <label for="enableExt" class="clickable">开启插件</label>
+            <input type="checkbox" id="cbEnableExt" />
+            <label for="cbEnableExt">开启插件</label>
           </div>
 
           <div class="extOptions">
@@ -25,14 +25,11 @@
               <li>
                 悬浮取词
                 <div>
-                  <input type="checkbox" id="enableHovering" />
-                  <label for="enableHovering">允许</label>
-                </div>
-
-                <div>
-                  <input type="checkbox" id="auxKey" />
-                  <label for="auxKey">需按键</label>
-                  <select id="auxKeySelection">
+                  <input type="checkbox" id="cbEnableHovering" />
+                  <label for="cbEnableHovering">允许</label>
+                  &nbsp;&nbsp;辅助键:
+                  <select id="selAuxKey">
+                    <option value="">无</option>
                     <option value="shiftKey">Shift</option>
                     <option value="ctrlKey" selected>Ctrl</option>
                     <option value="altKey">Alt</option>
@@ -43,7 +40,7 @@
                 翻译内容
                 <div>
                   背景颜色
-                  <select id="backgroundColor" value="skyblue">
+                  <select id="selBackgroundColor" value="skyblue">
                     <option value="#f5dcb4">Cream</option>
                     <option value="#6fdc6f">Light Green</option>
                     <option value="lightgrey">Light Grey</option>
@@ -65,6 +62,7 @@
         </div>
       </div>
     </div>
+    <script src="lib/util.js"></script>
     <script src="setting.js"></script>
   </body>
 </html>

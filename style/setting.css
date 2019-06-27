@@ -18,7 +18,7 @@
 .main .container .body input[type=checkbox] {
   transform: scale(1.2);
 }
-.main .container .body .clickable {
+.main .container .body label[for] {
   cursor: pointer;
 }
 .main .container .body .extOptions ul.optionList li:not(:first-child) {

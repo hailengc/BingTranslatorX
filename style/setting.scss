@@ -17,15 +17,13 @@
       input {
         vertical-align: middle;
       }
+
       input[type="checkbox"] {
         transform: scale(1.2);
       }
 
-      .clickable {
+      label[for] {
         cursor: pointer;
-      }
-
-      .enableExt {
       }
 
       .extOptions {

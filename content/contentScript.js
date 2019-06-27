@@ -29,14 +29,6 @@ function isDisplay(selector) {
   return false;
 }
 
-function fetchExtSetting() {
-  return new Promise((res, rej) => {
-    chrome.storage.sync.get(null, result => {
-      res(result);
-    });
-  });
-}
-
 function isHoveringEnable(event) {
   if (extSetting.enable && extSetting.hover.enable) {
     if (extSetting.hover.key) {
@@ -531,6 +523,7 @@ function init() {
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
       for (const key in changes) {
+        logTime("storage.onChange");
         const storageChange = changes[key];
         // console.log(
         //   'Storage key "%s" in namespace "%s" changed. ' +
