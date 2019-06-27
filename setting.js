@@ -1,11 +1,9 @@
-"use strict";
+// let extensionOnOff = document.getElementById("extensionOnOff");
 
-let extensionOnOff = document.getElementById("extensionOnOff");
+// extensionOnOff.onclick = function(element) {
+//   chrome.storage.sync.set({
+//     enable: false
+//   });
 
-extensionOnOff.onclick = function(element) {
-  chrome.storage.sync.set({
-    enable: false
-  });
-
-  chrome.browserAction.setIcon({ path: "images/logo32-inactive.png" });
-};
+//   chrome.browserAction.setIcon({ path: "images/logo32-inactive.png" });
+// };

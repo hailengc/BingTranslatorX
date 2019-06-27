@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <link rel="stylesheet" href="style/setting.css" />
+    <title>Document</title>
   </head>
   <body>
     <div class="main">
@@ -13,7 +17,30 @@
         <div class="body">
           <div class="enableExt">
             <input type="checkbox" id="enableExt" />
-            <label for="enableExt" class="clickable">Enable</label>
+            <label for="enableExt" class="clickable">开启插件</label>
+          </div>
+
+          <div class="extOptions">
+            <ul>
+              <li>
+                悬浮取词
+                <div>
+                  <input type="checkbox" id="enableHovering" />
+                  <label for="enableHovering">允许</label>
+                </div>
+
+                <div>
+                  <input type="checkbox" id="auxKey" />
+                  <label for="auxKey">需按键</label>
+                  <select id="auxKeySelection" value="ctrlKey">
+                    <option value="shiftKey">Shift</option>
+                    <option value="ctrlKey">Ctrl</option>
+                    <option value="altKey">Alt</option>
+                  </select>
+                </div>
+              </li>
+              <li>翻译内容</li>
+            </ul>
           </div>
         </div>
 
