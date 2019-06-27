@@ -21,7 +21,7 @@
           </div>
 
           <div class="extOptions">
-            <ul>
+            <ul class="optionList">
               <li>
                 悬浮取词
                 <div>
@@ -32,14 +32,26 @@
                 <div>
                   <input type="checkbox" id="auxKey" />
                   <label for="auxKey">需按键</label>
-                  <select id="auxKeySelection" value="ctrlKey">
+                  <select id="auxKeySelection">
                     <option value="shiftKey">Shift</option>
-                    <option value="ctrlKey">Ctrl</option>
+                    <option value="ctrlKey" selected>Ctrl</option>
                     <option value="altKey">Alt</option>
                   </select>
                 </div>
               </li>
-              <li>翻译内容</li>
+              <li>
+                翻译内容
+                <div>
+                  背景颜色
+                  <select id="backgroundColor" value="skyblue">
+                    <option value="#f5dcb4">Cream</option>
+                    <option value="#6fdc6f">Light Green</option>
+                    <option value="lightgrey">Light Grey</option>
+                    <option value="skyblue" selected>Sky Blue</option>
+                    <option value="white">White</option>
+                  </select>
+                </div>
+              </li>
             </ul>
           </div>
         </div>

@@ -29,6 +29,11 @@
       }
 
       .extOptions {
+        ul.optionList {
+          li:not(:first-child) {
+            margin-top: 10px;
+          }
+        }
       }
     }
 

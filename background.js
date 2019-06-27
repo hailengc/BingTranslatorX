@@ -9,8 +9,9 @@ chrome.runtime.onInstalled.addListener(function() {
     },
     container: {
       // default skyblue
-      backgroundColor: "#87ceeb"
-      // backgroundColor: "red"
+      backgroundColor: "lightgrey"
+      // backgroundColor: "white"
+      // backgroundColor: "#84e184"
     }
   });
 });

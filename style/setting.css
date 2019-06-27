@@ -21,6 +21,9 @@
 .main .container .body .clickable {
   cursor: pointer;
 }
+.main .container .body .extOptions ul.optionList li:not(:first-child) {
+  margin-top: 10px;
+}
 .main .container .footer {
   text-align: center;
   font-size: 12px;

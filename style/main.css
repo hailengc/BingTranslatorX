@@ -48,7 +48,7 @@
   cursor: pointer;
 }
 #__EXT_BT_ROOT__ .container .content .header .pron .pr .volume :hover {
-  fill: yellow;
+  fill: #ffa31a;
 }
 #__EXT_BT_ROOT__ .container .content .header .pron .pr .pr-en {
   margin-left: 10px;
