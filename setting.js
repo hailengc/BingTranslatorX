@@ -7,5 +7,5 @@ extensionOnOff.onclick = function(element) {
     enable: false
   });
 
-  chrome.browserAction.setIcon({ path: "images/test.png" });
+  chrome.browserAction.setIcon({ path: "images/logo32-inactive.png" });
 };

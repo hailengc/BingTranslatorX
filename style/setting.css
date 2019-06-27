@@ -1,0 +1,27 @@
+.main {
+  width: 250px;
+  background-color: skyblue;
+  padding: 10px;
+  margin: auto;
+}
+.main .container .header {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+.main .container .body .clickable {
+  cursor: pointer;
+}
+.main .container .body .enableExt input {
+  vertical-align: middle;
+}
+.main .container .footer {
+  text-align: center;
+}
+.main .container .footer .about {
+  font-size: 10px;
+}
+.main .container .footer .about img {
+  vertical-align: middle;
+  transform: translateY(-2px);
+}

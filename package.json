@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A translator based on Bing dict",
   "scripts": {
-    "genstyle": "npx sass style/main.scss style/main.css --no-source-map"
+    "genstyle": "npx sass style/  --no-source-map"
   },
   "repository": {
     "type": "git",

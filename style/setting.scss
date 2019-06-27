@@ -1,0 +1,37 @@
+.main {
+  width: 250px;
+  background-color: skyblue;
+  padding: 10px;
+  margin: auto;
+
+  .container {
+    .header {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .body {
+      .clickable {
+        cursor: pointer;
+      }
+      .enableExt {
+        input {
+          vertical-align: middle;
+        }
+      }
+    }
+
+    .footer {
+      text-align: center;
+
+      .about {
+        font-size: 10px;
+        img {
+          vertical-align: middle;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+}
