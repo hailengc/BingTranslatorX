@@ -156,9 +156,19 @@ function getTranslationContentType(contentNode) {
   }
 }
 
+function isOriginInAudioBanList() {
+  const origin = window.location.origin;
+  // TODO: not good enough
+  return audioBanList.find(host => origin.startsWith(host));
+}
+
 const audioUrlRegexp = /https.*\.mp3/;
 function getAudioUrl(contentNode, type) {
   try {
+    if (isOriginInAudioBanList()) {
+      return false;
+    }
+
     const ss = type === "US" ? ".hd_prUS" : ".hd_pr";
     const hdNode = contentNode.querySelector(`${ss} + .hd_tf`);
     const linkNode = hdNode.querySelector("a");
@@ -432,8 +442,12 @@ function findTargetAudio(targetNode) {
 }
 
 function playAudioIfCan(targetNode) {
-  const audioNode = findTargetAudio(targetNode);
-  audioNode && audioNode.play && audioNode.play();
+  try {
+    const audioNode = findTargetAudio(targetNode);
+    audioNode && audioNode.play && audioNode.play();
+  } catch (error) {
+    // if anything wrong, keep silence...
+  }
 }
 
 function isChildOfVolume(targetNode) {
