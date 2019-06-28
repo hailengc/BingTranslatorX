@@ -33,11 +33,16 @@
           }
         }
       }
+
+      .close {
+        text-align: center;
+      }
     }
 
     .footer {
       text-align: center;
       font-size: 12px;
+      margin-top: 10px;
 
       .about {
         img {

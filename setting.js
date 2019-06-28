@@ -18,9 +18,10 @@ const defaultSetting = {
     backgroundColor: "skyblue"
   }
 };
-
+// hide until setting is ready
 hideElement(".main");
 
+const main = document.querySelector(".main");
 const cbEnableExt = document.getElementById("cbEnableExt");
 
 const cbEnableHovering = document.getElementById("cbEnableHovering");
@@ -30,26 +31,47 @@ cbEnableHovering.optionChildren = [selAuxKey];
 const selBackgroundColor = document.getElementById("selBackgroundColor");
 cbEnableExt.optionChildren = [cbEnableHovering, selBackgroundColor];
 
+const closeButton = document.getElementById("closeButton");
+
+// add event handler
 cbEnableExt.onclick = event => {
   const checked = event.target.checked;
   toggleCheckBox(cbEnableExt, checked);
-  chrome.storage.sync.set({ enable: checked });
+  extensionSetting.enable = checked;
+  saveSetting(extensionSetting);
 };
 
 cbEnableHovering.onclick = event => {
   const checked = event.target.checked;
   toggleCheckBox(cbEnableHovering, checked);
-  chrome.storage.sync.set({
-    hover: { ...extensionSetting.hover, enable: checked }
-  });
+
+  extensionSetting.hover.enable = checked;
+  saveSetting(extensionSetting);
 };
 
-function toggleDisabled(element, disabled) {
-  if (disabled) {
-    element.setAttribute("disabled", true);
-  } else {
-    element.removeAttribute("disabled");
-  }
+selAuxKey.onchange = event => {
+  extensionSetting.hover.key = event.target.value;
+  saveSetting(extensionSetting);
+};
+
+selBackgroundColor.onchange = event => {
+  const color = event.target.value;
+  extensionSetting.container.backgroundColor = color;
+  main.style.backgroundColor = color;
+  saveSetting(extensionSetting);
+};
+
+closeButton.onclick = event => {
+  window.close();
+};
+
+function saveSetting(setting) {
+  chrome.storage.sync.set(setting);
+}
+
+function changeIcon(isActive) {
+  const path = isActive ? "images/logo32.png" : "images/logo32-inactive.png";
+  chrome.browserAction.setIcon({ path });
 }
 
 function toggleCheckBox(cb, checked) {
@@ -60,12 +82,18 @@ function toggleCheckBox(cb, checked) {
       child.disabled = !checked;
     });
   }
+
+  if (cb === cbEnableExt) {
+    changeIcon(checked);
+  }
 }
 
 function updateFormWithSetting(setting) {
   toggleCheckBox(cbEnableExt, setting.enable);
   toggleCheckBox(cbEnableHovering, setting.hover.enable);
   selAuxKey.value = setting.hover.key;
+  selBackgroundColor.value = setting.container.backgroundColor;
+  main.style.backgroundColor = setting.container.backgroundColor;
 }
 
 let extensionSetting = null;

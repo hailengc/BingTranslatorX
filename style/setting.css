@@ -24,9 +24,13 @@
 .main .container .body .extOptions ul.optionList li:not(:first-child) {
   margin-top: 10px;
 }
+.main .container .body .close {
+  text-align: center;
+}
 .main .container .footer {
   text-align: center;
   font-size: 12px;
+  margin-top: 10px;
 }
 .main .container .footer .about img {
   vertical-align: middle;
