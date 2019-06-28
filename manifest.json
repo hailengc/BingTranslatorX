@@ -1,7 +1,7 @@
 {
   "name": "BingTranslatorX",
   "version": "1.0",
-  "description": "基于必应词典中英互译, 支持鼠标悬浮取词、英美音标和发音。An English-Chinese/Chinese-English translator based on Bing dict. ",
+  "description": "基于必应词典的中英互译, 支持鼠标悬浮取词、英美音标和发音。An English-Chinese/Chinese-English translator based on Bing dict. ",
   "permissions": ["tabs", "activeTab", "declarativeContent", "storage"],
   "options_page": "setting.html",
   "background": {
