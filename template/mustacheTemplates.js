@@ -14,8 +14,7 @@ const standardTemplate = `
         <div class="pr prUS">
             <span class="pr-country">{{ pron.prUS }}</span>
             {{ #pron.audioUS}}
-            <span class="volume" onmouseover="this.parentElement.querySelector('.audioUS').play()" 
-                                  onclick="this.parentElement.querySelector('.audioUS').play()">{{ >volume }}</span>
+            <span class="volume">{{ >volume }}</span>
             <audio src="{{pron.audioUS}}" class="audioUS" ></audio>
             {{ /pron.audioUS}}
         </div>
@@ -25,8 +24,7 @@ const standardTemplate = `
         <div class="pr prEN">
             <span class="pr-country pr-en">{{ pron.prEN }}</span>
             {{ #pron.audioEN}}
-            <span class="volume" onmouseover="this.parentElement.querySelector('.audioEN').play()" 
-                                  onclick="this.parentElement.querySelector('.audioEN').play()">{{ >volume }}</span>
+            <span class="volume">{{ >volume }}</span>
             <audio src="{{pron.audioEN}}" class="audioEN"></audio>
             {{ /pron.audioEN}}
         </div>

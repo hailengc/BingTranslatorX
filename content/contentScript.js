@@ -13,6 +13,12 @@ const TRANSLATION_CONTENT_NORMAL = "TRANSLATION_CONTENT_NORMAL";
 const TRANSLATION_CONTENT_MULTIWORD = "TRANSLATION_CONTENT_MULTIWORD";
 const TRANSLATION_CONTENT_INVALID = "TRANSLATION_CONTENT_INVALID";
 
+const keyNameMapping = {
+  Shift: "shiftKey",
+  Control: "ctrlKey",
+  Alt: "altKey"
+};
+
 function getSeletionCR(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
 }
@@ -362,7 +368,7 @@ function startSelecting(event) {
 
 // document.addEventListener("selectionchange", event => {});
 
-const CHECK_INTERVAL = 20;
+const CHECK_INTERVAL = 30;
 const VALID_HOVERING_TIME = 300;
 let queryTargetDetectInterval = null;
 
@@ -425,9 +431,22 @@ function findTargetAudio(targetNode) {
   return null;
 }
 
-function playAudioIfNeed(targetNode) {
+function playAudioIfCan(targetNode) {
   const audioNode = findTargetAudio(targetNode);
   audioNode && audioNode.play && audioNode.play();
+}
+
+function isChildOfVolume(targetNode) {
+  const volumeNodes = getContainerNode().getElementsByClassName("volume");
+
+  for (let index = 0; index < volumeNodes.length; index++) {
+    const volumeNode = volumeNodes[index];
+    if (volumeNode.contains(targetNode)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function init() {
@@ -457,6 +476,15 @@ function init() {
         const queryTarget = getQueryTargetByHovering(event);
         if (!queryTarget.equalTo(lastQueryTarget)) {
           lastQueryTarget = queryTarget;
+        }
+      }
+    });
+
+    document.addEventListener("keyup", event => {
+      const key = event.key;
+      if (extSetting.hover.enable && extSetting.hover.key) {
+        if (extSetting.hover.key === keyNameMapping[key]) {
+          hideAll();
         }
       }
     });
@@ -516,14 +544,23 @@ function init() {
             openNewTab(href);
           }
         }
+      } else if (isChildOfVolume(target)) {
+        playAudioIfCan(target);
       }
+
       event.preventDefault();
       event.stopPropagation();
     });
 
+    getContainerNode().addEventListener("mouseover", event => {
+      if (isChildOfVolume(event.target)) {
+        playAudioIfCan(event.target);
+        event.stopPropagation();
+      }
+    });
+
     chrome.storage.onChanged.addListener((changes, namespace) => {
       for (const key in changes) {
-        logTime("storage.onChange");
         const storageChange = changes[key];
         // console.log(
         //   'Storage key "%s" in namespace "%s" changed. ' +
@@ -541,7 +578,5 @@ function init() {
 
 fetchExtSetting().then(setting => {
   extSetting = setting;
-  console.log(extSetting);
-
   init();
 });
