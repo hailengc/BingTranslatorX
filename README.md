@@ -7,19 +7,18 @@ A Chrome extension for Chiese-English/English-Chinese translating. Support mouse
 ## 截屏示例
 
 - 单击或者选中取词
-  
     ![select](images/ss/select.png)
 
-- 鼠标悬浮取
-  
+
+- 鼠标悬浮取词
     ![hover](images/ss/hover.png)
 
+
 - 支持中翻英
-  
     ![c2e](images/ss/c2e.png)
 
+
 - 选项
-  
     ![setting](images/ss/setting.png)
 
 
