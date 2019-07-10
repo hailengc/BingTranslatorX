@@ -27,6 +27,11 @@ A Chrome extension for Chiese-English/English-Chinese translating. Support mouse
 - 📧: hailengc@gmail.com
 - [Create an issue](https://github.com/hailengc/BingTranslatorX/issues)
 
+## Thanks
+- Animation icon [Ellipsis](https://loading.io/spinner/custom/279251/) is provided by loading.io
+
+
+
 
 
 
