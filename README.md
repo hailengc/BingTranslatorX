@@ -15,11 +15,12 @@ A Chrome extension for Chiese-English/English-Chinese translating. Support mouse
 
 
 - 支持中翻英
+  
     ![c2e](images/ss/c2e.png)
 
 
 - 选项
-- 
+  
     ![setting](images/ss/setting.png)
 
 
