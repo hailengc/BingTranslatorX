@@ -19,6 +19,7 @@ A Chrome extension for Chiese-English/English-Chinese translating. Support mouse
 
 
 - 选项
+- 
     ![setting](images/ss/setting.png)
 
 
