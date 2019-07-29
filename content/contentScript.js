@@ -487,10 +487,11 @@ function init() {
         }
         lastQueryTarget = new QueryTarget(selectedString, cr);
       } else {
-        const queryTarget = getQueryTargetByHovering(event);
-        if (!queryTarget.equalTo(lastQueryTarget)) {
-          lastQueryTarget = queryTarget;
-        }
+        // const queryTarget = getQueryTargetByHovering(event);
+        // if (!queryTarget.equalTo(lastQueryTarget)) {
+        //   lastQueryTarget = queryTarget;
+        // }
+        lastQueryTarget = QueryTarget.createNullTarget();
       }
     });
 

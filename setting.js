@@ -18,8 +18,15 @@ const defaultSetting = {
     backgroundColor: "skyblue"
   }
 };
+
+const i18n = chrome.i18n.getMessage;
+
 // hide until setting is ready
 hideElement(".main");
+
+document.querySelectorAll("[data-i18n]").forEach(node => {
+  node.textContent = i18n(node.dataset.i18n);
+});
 
 const main = document.querySelector(".main");
 const cbEnableExt = document.getElementById("cbEnableExt");
