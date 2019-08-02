@@ -1,5 +1,29 @@
 {
+  "setting": {
+    "message": "设置"
+  },
   "enable": {
     "message": "启用"
+  },
+  "translate_when_hovering_on_word": {
+    "message": "鼠标悬浮取词"
+  },
+  "pressKey": {
+    "message": "附加按键"
+  },
+  "translationContainer": {
+    "message": "翻译内容"
+  },
+  "backgroundColor": {
+    "message": "背景颜色"
+  },
+  "about": {
+    "message": "关于"
+  },
+  "close": {
+    "message": "关闭"
+  },
+  "bugReport": {
+    "message": "问题报告"
   }
 }

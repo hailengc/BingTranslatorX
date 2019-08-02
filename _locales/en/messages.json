@@ -1,8 +1,29 @@
 {
+  "setting": {
+    "message": "Setting"
+  },
   "enable": {
     "message": "Enable"
   },
   "translate_when_hovering_on_word": {
     "message": "Translate when hovering on word"
+  },
+  "pressKey": {
+    "message": "Additional Key"
+  },
+  "translationContainer": {
+    "message": "Translation Container"
+  },
+  "backgroundColor": {
+    "message": "Background Color"
+  },
+  "about": {
+    "message": "About"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "bugReport": {
+    "message": "Bug Report"
   }
 }

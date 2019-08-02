@@ -11,7 +11,7 @@
     <div class="main">
       <div class="container">
         <div class="header">
-          <span>Setting</span>
+          <span data-i18n="setting"></span>
         </div>
 
         <div class="body">
@@ -26,8 +26,8 @@
                 <span data-i18n="translate_when_hovering_on_word"></span>
                 <div>
                   <input type="checkbox" id="cbEnableHovering" />
-                  <label for="cbEnableHovering">Enable</label>
-                  &nbsp;&nbsp;&nbsp;Press Key:
+                  <label for="cbEnableHovering" data-i18n="enable"></label>
+                  &nbsp;&nbsp;&nbsp;<span data-i18n="pressKey"></span>:
                   <select id="selAuxKey">
                     <option value="">None</option>
                     <option value="shiftKey">Shift</option>
@@ -37,9 +37,9 @@
                 </div>
               </li>
               <li>
-                Translation container
+                <span data-i18n="translationContainer"></span>
                 <div>
-                  Background Color
+                  <span data-i18n="backgroundColor"></span>:
                   <select id="selBackgroundColor" value="skyblue">
                     <option value="#f5dcb4">Cream</option>
                     <option value="#6fdc6f">Light Green</option>
@@ -53,20 +53,24 @@
           </div>
 
           <div class="close">
-            <input type="button" value="close" id="closeButton" />
+            <button id="closeButton">
+              <span data-i18n="close"></span>
+            </button>
           </div>
         </div>
 
         <div class="footer">
-          <a href="https://github.com/hailengc/BingTranslatorX" target="blank"
-            ><b>About</b></a
-          >
+          <a
+            href="https://github.com/hailengc/BingTranslatorX#bingtraslatorx"
+            target="blank"
+            ><b><span data-i18n="about"></span></b
+          ></a>
           &nbsp;&nbsp;
           <a
             href="https://github.com/hailengc/BingTranslatorX#bug-report"
             target="blank"
-            ><b> Bug Report</b></a
-          >
+            ><b> <span data-i18n="bugReport"></span></b
+          ></a>
           <div class="about">
             <span>BingTranslatorX</span>
             <img src="images/logo16.png" alt="logo" />
