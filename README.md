@@ -1,4 +1,4 @@
-# BingTraslatorX
+# BingTranslatorX
 
 基于必应词典的中英互译, 支持鼠标选中/悬浮取词、英美音标及发音。如果你喜欢必应词典，不要错过！
 
