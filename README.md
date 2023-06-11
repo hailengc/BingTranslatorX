@@ -4,8 +4,8 @@
 
 A Chrome extension for Chiese-English/English-Chinese translating. Support mouse hovering and selection.Based on https://www.bing.com/dict.
 
-Note: Currently this extension is built on Manifest V2, however Google will stop support V2 start from 2023. I'll migrate this extension to Manifest V3 before that, hopefully with some bug fixing as well.
-See [Manifest V2 support timeline](https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/).
+Note: Currently this extension is built on Manifest V2, however Google will stop support V2 start from 2023. ~~I'll migrate this extension to Manifest V3 before that, hopefully with some bug fixing as well.
+See [Manifest V2 support timeline](https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/). ~~, Sorry for anyone is wating on this, I failed to do the update, I'll try my best, thank you!
 
 ## 截屏示例 (Screenshots)
 
