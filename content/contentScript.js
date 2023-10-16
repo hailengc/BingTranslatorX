@@ -1,5 +1,5 @@
 const rootSelector = "#__EXT_BT_ROOT__";
-const containerSelector = `${rootSelector} .container`;
+const containerSelector = `${rootSelector} .ext-bt-container`;
 const loadingSelector = `${rootSelector} .loading`;
 
 let isSelecting = false,
@@ -16,10 +16,10 @@ const TRANSLATION_CONTENT_INVALID = "TRANSLATION_CONTENT_INVALID";
 const keyNameMapping = {
   Shift: "shiftKey",
   Control: "ctrlKey",
-  Alt: "altKey"
+  Alt: "altKey",
 };
 
-function getSeletionCR(selection) {
+function getSeletionClientRect(selection) {
   return selection.getRangeAt(0).getBoundingClientRect();
 }
 
@@ -38,7 +38,7 @@ function isDisplay(selector) {
 function isHoveringEnable(event) {
   if (extSetting.enable && extSetting.hover.enable) {
     if (extSetting.hover.key) {
-      return event[extSetting.hover.key];
+      return !!event[extSetting.hover.key];
     } else {
       return true;
     }
@@ -159,14 +159,14 @@ function getTranslationContentType(contentNode) {
 function isOriginInAudioBanList() {
   const origin = window.location.origin;
   // TODO: not good enough
-  return audioBanList.find(host => origin.startsWith(host));
+  return audioBanList.find((host) => origin.startsWith(host));
 }
 
 const audioUrlRegexp = /https.*\.mp3/;
 function getAudioUrl(contentNode, type) {
   try {
     if (isOriginInAudioBanList()) {
-      return false;
+      return null;
     }
 
     const ss = type === "US" ? ".hd_prUS" : ".hd_pr";
@@ -180,7 +180,7 @@ function getAudioUrl(contentNode, type) {
 }
 
 const queryUrlTestExp = /^\/dict\/search\?.*$/;
-const queryHost = "https://cn.bing.com";
+const queryHost = "https://www.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
 function convertFromHTMLContent(htmlContent, queryString) {
@@ -214,7 +214,7 @@ function convertFromHTMLContent(htmlContent, queryString) {
             prUS: getTextContent(pronNode.querySelector(".hd_prUS")),
             audioUS: getAudioUrl(pronNode, "US"),
             prEN: getTextContent(pronNode.querySelector(".hd_pr")),
-            audioEN: getAudioUrl(pronNode, "EN")
+            audioEN: getAudioUrl(pronNode, "EN"),
           }
         : null;
 
@@ -227,7 +227,7 @@ function convertFromHTMLContent(htmlContent, queryString) {
         translationList.push({
           property,
           translation,
-          isWeb: property.toLowerCase().indexOf("web") > -1
+          isWeb: property.toLowerCase().indexOf("web") > -1,
         });
       }
 
@@ -240,30 +240,31 @@ function convertFromHTMLContent(htmlContent, queryString) {
           headerWord,
           translationList,
           hasPhonetic: true,
-          pron
+          pron,
         },
+        // volume is a partial template
         {
-          volume: volumeTemplate
+          volume: volumeTemplate,
         }
       );
     } else if (contentType === TRANSLATION_CONTENT_MULTIWORD) {
       const translation = contentNode.querySelector(".p1-11").textContent;
       convertedContent = Mustache.render(multiWordTemplate, {
-        translation
+        translation,
       });
     }
   } catch (error) {
     if (error.message === ERROR_NETWORK_ERROR) {
       convertedContent = Mustache.render(noContentTemplate, {
-        message: "Sorry, 似乎有网络错误"
+        message: "Sorry, 似乎有网络错误",
       });
     } else if (error.message === ERROR_INVALID_CONTENT) {
       convertedContent = Mustache.render(noContentTemplate, {
-        message: "Sorry, 没有找到该词的翻译"
+        message: "Sorry, 没有找到该词的翻译",
       });
     } else {
       convertedContent = Mustache.render(noContentTemplate, {
-        message: "Sorry, 似乎有未知错误"
+        message: "Sorry, 似乎有未知错误",
       });
     }
   }
@@ -287,7 +288,7 @@ function queryAndShow(queryTarget) {
   const queryString = queryTarget.targetString;
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
-    response => {
+    (response) => {
       const htmlContent =
         response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
       const convertedContent = convertFromHTMLContent(htmlContent, queryString);
@@ -310,73 +311,66 @@ function getCurrentSelectionRange() {
 }
 
 function getQueryTargetByHovering(event) {
+  let range = null,
+    textNode = null,
+    rect = null,
+    selection = null,
+    qstr = null;
+
   if (
     event.target.nodeName === "INPUT" ||
     event.target.nodeName === "TEXTAREA"
   ) {
-    // skip hovering targets: Input and Textarea
+    // TODO: how to fix?
+    // The challenge is couldn't find a way to get caret postion without mouse click.
     return QueryTarget.createNullTarget();
-  }
-
-  let queryTarget = QueryTarget.createNullTarget(),
-    range = null,
-    textNode = null;
-
-  const currentSelectionRange = getCurrentSelectionRange();
-  const activeElement = document.activeElement;
-  // Note: assume selectionStart equals selectionEnd
-  const activeElementEditable = !isNil(activeElement.selectionStart);
-  const activeElementSelectionStart = activeElement.selectionStart || 0;
-
-  if (document.caretPositionFromPoint) {
-    range = document.caretPositionFromPoint(event.clientX, event.clientY);
-    textNode = range.offsetNode;
-    offset = range.offset;
-  } else if (document.caretRangeFromPoint) {
-    range = document.caretRangeFromPoint(event.clientX, event.clientY);
-    if (range) {
-      textNode = range.startContainer;
-      offset = range.startOffset;
+  } else {
+    // convert hover caret position to client X and Y
+    if (document.caretPositionFromPoint) {
+      range = document.caretPositionFromPoint(event.clientX, event.clientY);
+      textNode = range.offsetNode;
+      offset = range.offset;
+    } else if (document.caretRangeFromPoint) {
+      // Use WebKit-proprietary fallback method
+      range = document.caretRangeFromPoint(event.clientX, event.clientY);
+      if (range) {
+        textNode = range.startContainer;
+        offset = range.startOffset;
+      }
+    } else {
+      return QueryTarget.createNullTarget();
     }
-  }
-
-  if (isValidTextNode(textNode)) {
-    const selection = window.getSelection();
+    // use a selection object to hold the range we just got and expand it to a word
+    // NOTE:
+    // see: https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection
+    // It is worth noting that currently getSelection() doesn't work on the content of <textarea> and <input> elements in Firefox and Edge (Legacy).
+    // HTMLInputElement.setSelectionRange() or the selectionStart and selectionEnd properties could be used to work around this.
+    selection = window.getSelection();
     selection.empty();
     selection.addRange(range);
     selection.modify("move", "forward", "word");
     selection.modify("extend", "backward", "word");
-    const slectionRange = selection.getRangeAt(0);
-    const rect = slectionRange.getBoundingClientRect();
-
-    const qstr = selection.toString().trim();
-    if (qstr && inRect(rect, event.clientX, event.clientY)) {
-      queryTarget = new QueryTarget(qstr, rect);
-    }
-
+    qstr = selection.toString().trim();
+    rect = selection.getRangeAt(0).getBoundingClientRect();
+    // remeber to empty selection again
     selection.empty();
-    if (currentSelectionRange) {
-      if (activeElement && activeElementEditable) {
-        activeElement.focus();
-        activeElement.selectionStart = activeElementSelectionStart;
-      } else {
-        selection.addRange(currentSelectionRange);
-      }
+
+    // get string content of the selection and build the `query target`
+    if (qstr && inRect(rect, event.clientX, event.clientY)) {
+      return new QueryTarget(qstr, rect);
+    } else {
+      return QueryTarget.createNullTarget();
     }
   }
-
-  return queryTarget;
 }
 
 function startSelecting(event) {
-  if (isEventFromContainer(event)) {
+  if (isEventFromBTXContainer(event)) {
     return;
   }
   isSelecting = true;
   hideAll();
 }
-
-// document.addEventListener("selectionchange", event => {});
 
 const CHECK_INTERVAL = 30;
 const VALID_HOVERING_TIME = 300;
@@ -412,15 +406,17 @@ function getContainerNode() {
   return document.querySelector(containerSelector);
 }
 
-function isEventFromContainer(event) {
+function isEventFromBTXContainer(event) {
   const container = document.querySelector(containerSelector);
   return container.contains(event.target);
 }
 
-function isTargetIgnorable(targetNode) {
+function isMouseUpEventTargetIgnorable(targetNode) {
   return (
     targetNode.nodeName === "INPUT" ||
-    document.activeElement.nodeName == "INPUT"
+    document.activeElement.nodeName == "INPUT" ||
+    targetNode.nodeName === "TEXTAREA" ||
+    document.activeElement.nodeName == "TEXTAREA"
   );
 }
 
@@ -447,6 +443,7 @@ function playAudioIfCan(targetNode) {
     audioNode && audioNode.play && audioNode.play();
   } catch (error) {
     // if anything wrong, keep silence...
+    console.log("... wait, Can I ask user to click?");
   }
 }
 
@@ -464,38 +461,82 @@ function isChildOfVolume(targetNode) {
 }
 
 function init() {
+  // see:  https://developer.mozilla.org/en-US/docs/Web/API/SecurityPolicyViolationEvent
   if (document.querySelector(rootSelector)) {
+    document.addEventListener("securitypolicyviolation", (e) => {
+      console.log(e.blockedURI);
+      console.log(e.violatedDirective);
+      console.log(e.originalPolicy);
+    });
+
     enableQueryTargetDetect();
 
     document.addEventListener("selectstart", startSelecting);
 
-    document.addEventListener("mouseup", event => {
-      isSelecting = false;
+    // TODO: try handle select event from input elements include Input and Textarea but failed, see comments below.
+    // document.addEventListener(
+    //   "select",
+    //   (event) => {
+    //     isSelecting = false;
+    //     if (isEventFromBTXContainer(event)) {
+    //       return;
+    //     }
+    //     let range = document.createRange();
+    //     range.setStart(event.target.firstChild, event.target.selectionStart);
+    //     range.setEnd(event.target.firstChild, event.target.selectionEnd);
+    //     const selectedString = range.toString().trim();
+    //     if (selectedString) {
+    //       // NOTE: this returns all-zero value rect,
+    //       // this is because there is no text node around this exact range
+    //       //  see https://stackoverflow.com/questions/29759713/how-to-get-the-bounding-rect-of-selected-text-inside-an-input
+    //       let cr = range.getBoundingClientRect();
+    //       lastQueryTarget = new QueryTarget(selectedString, cr);
+    //     } else {
+    //       // const queryTarget = getQueryTargetByHovering(event);
+    //       // if (!queryTarget.equalTo(lastQueryTarget)) {
+    //       //   lastQueryTarget = queryTarget;
+    //       // }
+    //       lastQueryTarget = QueryTarget.createNullTarget();
+    //     }
+    //   },
+    //   {
+    //     passive: true,
+    //   }
+    // );
 
-      if (isEventFromContainer(event) || isTargetIgnorable(event.target)) {
-        return;
-      }
+    document.addEventListener(
+      "mouseup",
+      (event) => {
+        isSelecting = false;
 
-      const sel = window.getSelection();
-      const selectedString = sel.toString().trim();
-      if (selectedString) {
-        let cr = getSeletionCR(sel);
-        if (cr.width == 0) {
-          // this happens when select in textarea and input
-          // create a 10*10 rect
-          cr = new DOMRect(event.clientX, event.clientY, 10, 10);
+        if (
+          // skip event from extension container area
+          isEventFromBTXContainer(event)
+        ) {
+          return;
         }
-        lastQueryTarget = new QueryTarget(selectedString, cr);
-      } else {
-        // const queryTarget = getQueryTargetByHovering(event);
-        // if (!queryTarget.equalTo(lastQueryTarget)) {
-        //   lastQueryTarget = queryTarget;
-        // }
-        lastQueryTarget = QueryTarget.createNullTarget();
-      }
-    });
 
-    document.addEventListener("keyup", event => {
+        const selection = window.getSelection();
+        const selectedString = selection.toString().trim();
+        if (selectedString) {
+          let clientRect = getSeletionClientRect(selection);
+          if (
+            isMouseUpEventTargetIgnorable(event.target) ||
+            clientRect.width == 0
+          ) {
+            // for these cases  we can't get real client rect,
+            // just create a small "anchor rect" so that we can show our container accordingly
+            clientRect = new DOMRect(event.clientX, event.clientY, 10, 10);
+          }
+          lastQueryTarget = new QueryTarget(selectedString, clientRect);
+        } else {
+          lastQueryTarget = QueryTarget.createNullTarget();
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener("keyup", (event) => {
       const key = event.key;
       if (extSetting.hover.enable && extSetting.hover.key) {
         if (extSetting.hover.key === keyNameMapping[key]) {
@@ -504,51 +545,55 @@ function init() {
       }
     });
 
-    document.addEventListener("scroll", event => {
-      if (hasValidSelection() && isUIShowing()) {
-        // move with the scroll
-        const sel = window.getSelection();
-        let cr = getSeletionCR(sel);
+    document.addEventListener(
+      "scroll",
+      (event) => {
+        if (hasValidSelection() && isUIShowing()) {
+          // move with the scroll
+          const sel = window.getSelection();
+          let cr = getSeletionClientRect(sel);
 
-        // update last query target's rect
-        if (lastQueryTarget.isValid) {
-          lastQueryTarget.updateClientRect(cr);
-        }
+          // update last query target's rect
+          if (lastQueryTarget.isValid) {
+            lastQueryTarget.updateClientRect(cr);
+          }
 
-        if (cr.width !== 0) {
-          if (isContainerShowing()) {
-            showContainer(cr);
-          } else if (isLoadingShowing()) {
-            showLoading(cr);
+          if (cr.width !== 0) {
+            if (isContainerShowing()) {
+              showContainer(cr);
+            } else if (isLoadingShowing()) {
+              showLoading(cr);
+            }
+          } else {
+            // for selections in textarea/input
+            hideAll();
           }
         } else {
-          // for selections in textarea/input
           hideAll();
         }
-      } else {
-        hideAll();
-      }
-    });
+      },
+      { passive: true }
+    );
 
-    document.addEventListener("mousemove", event => {
-      if (
-        isHoveringEnable(event) &&
-        !isSelecting &&
-        !hasValidSelection() &&
-        !isEventFromContainer(event)
-      ) {
-        const queryTarget = getQueryTargetByHovering(event);
-        if (!queryTarget.equalTo(lastQueryTarget)) {
-          lastQueryTarget = queryTarget;
+    document.addEventListener(
+      "mousemove",
+      (event) => {
+        if (
+          isHoveringEnable(event) &&
+          !isSelecting &&
+          !hasValidSelection() &&
+          !isEventFromBTXContainer(event)
+        ) {
+          const queryTarget = getQueryTargetByHovering(event);
+          if (!queryTarget.equalTo(lastQueryTarget)) {
+            lastQueryTarget = queryTarget;
+          }
         }
-      }
-    });
+      },
+      { passive: true }
+    );
 
-    // document.addEventListener("select", event => {
-    //   // this event fires from textarea and input
-    // });
-
-    getContainerNode().addEventListener("click", event => {
+    getContainerNode().addEventListener("click", (event) => {
       const target = event.target;
       if (target.nodeName === "A") {
         const href = target.getAttribute("href");
@@ -567,14 +612,22 @@ function init() {
       event.stopPropagation();
     });
 
-    getContainerNode().addEventListener("mouseover", event => {
-      if (isChildOfVolume(event.target)) {
-        playAudioIfCan(event.target);
-        event.stopPropagation();
-      }
-    });
+    // NOTE: Let's disable hovering to play, mainly because:
+    // "Uncaught (in promise) DOMException: play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+    /**
+    getContainerNode().addEventListener(
+      "mouseover",
+      (event) => {
+        if (isChildOfVolume(event.target)) {
+          playAudioIfCan(event.target);
+          event.stopPropagation();
+        }
+      },
+      { passive: true }
+    );
+     */
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
+    chrome.storage.local.onChanged.addListener((changes, namespace) => {
       for (const key in changes) {
         const storageChange = changes[key];
         // console.log(
@@ -591,7 +644,7 @@ function init() {
   }
 }
 
-fetchExtSetting().then(setting => {
+fetchExtSetting().then((setting) => {
   extSetting = setting;
   init();
 });

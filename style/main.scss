@@ -1,16 +1,19 @@
 #__EXT_BT_ROOT__ {
-  div,
-  span,
-  ul,
-  li {
-    all: unset;
+  all: unset;
+ 
+  div {
+    span,
+    ul,
+    li {
+      all: unset;
+    }
   }
 
   div {
     display: block;
   }
 
-  .container {
+  .ext-bt-container {
     z-index: 999999999;
     border: 1px solid grey;
     position: fixed;
@@ -28,8 +31,9 @@
           margin-left: 6px;
 
           a {
-            text-decoration: none;
-            color: #777777;
+            text-decoration: underline;
+            font-weight: bold;
+            color: #666666;
           }
         }
 

@@ -1,22 +1,12 @@
-// let extensionOnOff = document.getElementById("extensionOnOff");
-
-// extensionOnOff.onclick = function(element) {
-//   chrome.storage.sync.set({
-//     enable: false
-//   });
-
-//   chrome.browserAction.setIcon({ path: "images/logo32-inactive.png" });
-// };
-
 const defaultSetting = {
   enable: false,
   hover: {
     enable: true,
-    key: ""
+    key: "",
   },
   container: {
-    backgroundColor: "skyblue"
-  }
+    backgroundColor: "skyblue",
+  },
 };
 
 const i18n = chrome.i18n.getMessage;
@@ -24,7 +14,7 @@ const i18n = chrome.i18n.getMessage;
 // hide until setting is ready
 hideElement(".main");
 
-document.querySelectorAll("[data-i18n]").forEach(node => {
+document.querySelectorAll("[data-i18n]").forEach((node) => {
   node.textContent = i18n(node.dataset.i18n);
 });
 
@@ -41,14 +31,14 @@ cbEnableExt.optionChildren = [cbEnableHovering, selBackgroundColor];
 const closeButton = document.getElementById("closeButton");
 
 // add event handler
-cbEnableExt.onclick = event => {
+cbEnableExt.onclick = (event) => {
   const checked = event.target.checked;
   toggleCheckBox(cbEnableExt, checked);
   extensionSetting.enable = checked;
   saveSetting(extensionSetting);
 };
 
-cbEnableHovering.onclick = event => {
+cbEnableHovering.onclick = (event) => {
   const checked = event.target.checked;
   toggleCheckBox(cbEnableHovering, checked);
 
@@ -56,36 +46,36 @@ cbEnableHovering.onclick = event => {
   saveSetting(extensionSetting);
 };
 
-selAuxKey.onchange = event => {
+selAuxKey.onchange = (event) => {
   extensionSetting.hover.key = event.target.value;
   saveSetting(extensionSetting);
 };
 
-selBackgroundColor.onchange = event => {
+selBackgroundColor.onchange = (event) => {
   const color = event.target.value;
   extensionSetting.container.backgroundColor = color;
   main.style.backgroundColor = color;
   saveSetting(extensionSetting);
 };
 
-closeButton.onclick = event => {
+closeButton.onclick = (event) => {
   window.close();
 };
 
 function saveSetting(setting) {
-  chrome.storage.sync.set(setting);
+  chrome.storage.local.set(setting);
 }
 
 function changeIcon(isActive) {
   const path = isActive ? "images/logo32.png" : "images/logo32-inactive.png";
-  chrome.browserAction.setIcon({ path });
+  chrome.action.setIcon({ path });
 }
 
 function toggleCheckBox(cb, checked) {
   cb.checked = checked;
   const optionChildren = cb.optionChildren;
   if (optionChildren) {
-    optionChildren.forEach(child => {
+    optionChildren.forEach((child) => {
       child.disabled = !checked;
     });
   }
@@ -104,7 +94,7 @@ function updateFormWithSetting(setting) {
 }
 
 let extensionSetting = null;
-fetchExtSetting().then(setting => {
+fetchExtSetting().then((setting) => {
   // extensionSetting = defaultSetting;
   logTime("loaded setting success!");
   extensionSetting = setting;

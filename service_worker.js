@@ -2,43 +2,43 @@ const defaultSetting = {
   enable: true,
   hover: {
     enable: true,
-    key: ""
+    key: "",
   },
   container: {
-    backgroundColor: "skyblue"
-  }
+    backgroundColor: "skyblue",
+  },
 };
 
 const queryHost = "https://cn.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set(defaultSetting);
+  chrome.storage.local.set(defaultSetting);
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "query") {
     fetch(queryBaseUrl + encodeURIComponent(request.queryString), {
-      mode: "cors"
+      mode: "cors",
     })
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.text();
         } else {
           throw Promise.reject(response.statusText);
         }
       })
-      .then(data => {
+      .then((data) => {
         sendResponse({
           status: 0,
           data: data,
-          ...request
+          ...request,
         });
       })
-      .catch(error =>
+      .catch((error) =>
         sendResponse({
           ...request,
-          status: -1
+          status: -1,
         })
       );
 
@@ -47,12 +47,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === "createTab") {
     chrome.tabs.query(
       {
-        active: true
+        active: true,
       },
-      tab => {
+      (tab) => {
         chrome.tabs.create({
           url: request.url,
-          index: tab[0].index + 1
+          index: tab[0].index + 1,
         });
       }
     );

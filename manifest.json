@@ -1,15 +1,15 @@
 {
-  "name": "BingTranslatorX",
-  "default_locale": "en",
+  "manifest_version": 3,
+  "name": "BingTranslatorX-MV3",
   "version": "1.0",
+  "default_locale": "en",
   "description": "基于必应词典的中英互译, 支持鼠标悬浮取词、英美音标和发音。An English-Chinese/Chinese-English translator based on Bing dict. ",
-  "permissions": ["tabs", "activeTab", "declarativeContent", "storage"],
+  "permissions": ["activeTab", "declarativeContent", "storage"],
   "options_page": "setting.html",
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "service_worker.js"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "setting.html",
     "default_title": "BingTranslatorX",
     "default_icon": {
@@ -41,6 +41,10 @@
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources": ["images/*"],
-  "manifest_version": 2
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

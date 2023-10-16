@@ -15,7 +15,7 @@ const standardTemplate = `
             <span class="pr-country">{{ pron.prUS }}</span>
             {{ #pron.audioUS}}
             <span class="volume">{{ >volume }}</span>
-            <audio src="{{pron.audioUS}}" class="audioUS" ></audio>
+            <audio src="{{pron.audioUS}}" class="audioUS"></audio>
             {{ /pron.audioUS}}
         </div>
         {{/pron.prUS}}
