@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/hailengc/BingTranslator#readme",
   "dependencies": {
-    "sass": "^1.21.0"
+    "sass": "^1.69.3"
   }
 }
