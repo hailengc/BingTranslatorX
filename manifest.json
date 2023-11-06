@@ -4,7 +4,7 @@
   "version": "2.0",
   "default_locale": "en",
   "description": "基于必应词典的中英互译, 支持鼠标悬浮取词、英美音标和发音。An English-Chinese/Chinese-English translator based on Bing dict. ",
-  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "permissions": ["declarativeContent", "storage"],
   "options_page": "setting.html",
   "background": {
     "service_worker": "service_worker.js"
