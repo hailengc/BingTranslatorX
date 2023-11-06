@@ -2,9 +2,18 @@ const rootSelector = "#__EXT_BT_ROOT__";
 const containerSelector = `${rootSelector} .ext-bt-container`;
 const loadingSelector = `${rootSelector} .loading`;
 
-let isSelecting = false,
-  lastQueryTarget = QueryTarget.createNullTarget(),
-  extSetting = null;
+// flag tells if a selection is in progress
+let isSelecting = false;
+
+// the latest query target
+let lastQueryTarget = QueryTarget.createNullTarget();
+
+// the extentsion setting
+let extSetting = null;
+
+// if a security policy violation is detected
+// for now, use this to skip the audio play, this means we don't render the audio element in the template
+let isSecurityPolicyViolationDetected = false;
 
 const ERROR_INVALID_CONTENT = "INVALID_CONTENT";
 const ERROR_NETWORK_ERROR = "NETWORK_ERROR";
@@ -172,7 +181,7 @@ function getAudioUrl(contentNode, type) {
     const ss = type === "US" ? ".hd_prUS" : ".hd_pr";
     const hdNode = contentNode.querySelector(`${ss} + .hd_tf`);
     const linkNode = hdNode.querySelector("a");
-    const clickString = linkNode.getAttribute("onclick");
+    const clickString = linkNode.getAttribute("data-mp3link");
     return clickString.match(audioUrlRegexp)[0];
   } catch (error) {
     return null;
@@ -183,7 +192,7 @@ const queryUrlTestExp = /^\/dict\/search\?.*$/;
 const queryHost = "https://www.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
-function convertFromHTMLContent(htmlContent, queryString) {
+function convertFromBingResponseContent(htmlContent, queryString) {
   let convertedContent = null;
   try {
     if (htmlContent === ERROR_NETWORK_ERROR) {
@@ -209,14 +218,16 @@ function convertFromHTMLContent(htmlContent, queryString) {
 
       // get pronunciation
       const pronNode = contentNode.querySelector(".hd_p1_1");
-      const pron = pronNode
-        ? {
-            prUS: getTextContent(pronNode.querySelector(".hd_prUS")),
-            audioUS: getAudioUrl(pronNode, "US"),
-            prEN: getTextContent(pronNode.querySelector(".hd_pr")),
-            audioEN: getAudioUrl(pronNode, "EN"),
-          }
-        : null;
+      // make sure we don't render audio element if security policy violation is detected
+      const pron =
+        !isSecurityPolicyViolationDetected && pronNode
+          ? {
+              prUS: getTextContent(pronNode.querySelector(".hd_prUS")),
+              audioUS: getAudioUrl(pronNode, "US"),
+              prEN: getTextContent(pronNode.querySelector(".hd_pr")),
+              audioEN: getAudioUrl(pronNode, "EN"),
+            }
+          : null;
 
       // get translation
       const translationList = [];
@@ -291,7 +302,10 @@ function queryAndShow(queryTarget) {
     (response) => {
       const htmlContent =
         response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
-      const convertedContent = convertFromHTMLContent(htmlContent, queryString);
+      const convertedContent = convertFromBingResponseContent(
+        htmlContent,
+        queryString
+      );
       if (convertedContent && updateContainerContent(convertedContent)) {
         // check if still the same queryTarget
         if (queryTarget.equalTo(lastQueryTarget)) {
@@ -463,10 +477,18 @@ function isChildOfVolume(targetNode) {
 function init() {
   // see:  https://developer.mozilla.org/en-US/docs/Web/API/SecurityPolicyViolationEvent
   if (document.querySelector(rootSelector)) {
-    document.addEventListener("securitypolicyviolation", (e) => {
-      console.log(e.blockedURI);
-      console.log(e.violatedDirective);
-      console.log(e.originalPolicy);
+    document.addEventListener("securitypolicyviolation", (_e) => {
+      isSecurityPolicyViolationDetected = true;
+
+      // hide volume element if security policy violation is detected
+      let containerNode = getContainerNode();
+      if (containerNode && containerNode.display != "None") {
+        const volumeNodes = containerNode.getElementsByClassName("volume");
+        for (let index = 0; index < volumeNodes.length; index++) {
+          const volumeNode = volumeNodes[index];
+          volumeNode.style.display = "none";
+        }
+      }
     });
 
     enableQueryTargetDetect();
