@@ -37,14 +37,14 @@
         "content/contentScript.js"
       ],
       "css": ["style/main.css"],
-      "matches": ["<all_urls>"],
+      "matches": ["https://*/*", "http://*/*", "file:///*"],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["images/*"],
-      "matches": ["<all_urls>"]
+      "matches": ["https://*/*", "http://*/*", "file:///*"]
     }
   ]
 }
