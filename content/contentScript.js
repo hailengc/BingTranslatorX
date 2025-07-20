@@ -8,7 +8,7 @@ let isSelecting = false;
 // the latest query target
 let lastQueryTarget = QueryTarget.createNullTarget();
 
-// the extentsion setting
+// the extension setting
 let extSetting = null;
 
 // if a security policy violation is detected
