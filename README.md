@@ -2,7 +2,7 @@
 
 基于必应词典的中英互译, 支持鼠标选中/悬浮取词、英美音标及发音。基于 https://www.bing.com/dict 。
 
-A Chrome extension for Chiese-English/English-Chinese translating. Support mouse hovering and selection.Based on https://www.bing.com/dict.
+A Chrome extension for Chinese-English/English-Chinese translating. Support mouse hovering and selection.Based on https://www.bing.com/dict.
 
 ## 安装 ( Installation )
 
