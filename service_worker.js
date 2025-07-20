@@ -24,9 +24,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .then((response) => {
         if (response.ok) {
           return response.text();
-        } else {
-          throw Promise.reject(response.statusText);
         }
+        // Reject with an Error so that the catch block receives a proper
+        // error object instead of a pending Promise which would never
+        // trigger the catch handler correctly.
+        throw new Error(response.statusText);
       })
       .then((data) => {
         sendResponse({
