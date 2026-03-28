@@ -592,31 +592,9 @@ function init() {
     document.addEventListener(
       "scroll",
       (event) => {
-        if (hasValidSelection() && isUIShowing()) {
-          // move with the scroll
-          const sel = window.getSelection();
-          let cr = getSeletionClientRect(sel);
-
-          // update last query target's rect
-          if (lastQueryTarget.isValid) {
-            lastQueryTarget.updateClientRect(cr);
-          }
-
-          if (cr.width !== 0) {
-            if (isContainerShowing()) {
-              showContainer(cr);
-            } else if (isLoadingShowing()) {
-              showLoading(cr);
-            }
-          } else {
-            // for selections in textarea/input
-            hideAll();
-          }
-        } else {
-          hideAll();
-        }
+        hideAll();
       },
-      { passive: true }
+      { passive: true, capture: true }
     );
 
     document.addEventListener(
@@ -626,7 +604,9 @@ function init() {
           isHoveringEnable(event) &&
           !isSelecting &&
           !hasValidSelection() &&
-          !isEventFromBTXContainer(event)
+          !isEventFromBTXContainer(event) &&
+          document.activeElement.nodeName !== "INPUT" &&
+          document.activeElement.nodeName !== "TEXTAREA"
         ) {
           const queryTarget = getQueryTargetByHovering(event);
           if (!queryTarget.equalTo(lastQueryTarget)) {
