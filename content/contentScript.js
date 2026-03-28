@@ -1,6 +1,9 @@
-const rootSelector = "#__EXT_BT_ROOT__";
-const containerSelector = `${rootSelector} .ext-bt-container`;
-const loadingSelector = `${rootSelector} .loading`;
+const containerSelector = ".ext-bt-container";
+const loadingSelector = ".loading";
+
+function getShadowRoot() {
+  return window.__BTX_SHADOW__;
+}
 
 // flag tells if a selection is in progress
 let isSelecting = false;
@@ -29,6 +32,9 @@ const keyNameMapping = {
 };
 
 function getSeletionClientRect(selection) {
+  if (selection.rangeCount === 0) {
+    return new DOMRect(0, 0, 0, 0);
+  }
   return selection.getRangeAt(0).getBoundingClientRect();
 }
 
@@ -37,7 +43,7 @@ function hasValidSelection() {
 }
 
 function isDisplay(selector) {
-  const node = document.querySelector(selector);
+  const node = getShadowRoot().querySelector(selector);
   if (node && node.style.display !== "none") {
     return true;
   }
@@ -68,14 +74,10 @@ function isUIShowing() {
   return isContainerShowing() || isLoadingShowing();
 }
 
-function showRoot() {
-  showElement(rootSelector);
-}
-
 function hideRoot() {
-  const rootNode = document.querySelector(rootSelector);
-  rootNode.style.top = -999;
-  rootNode.style.left = -999;
+  const host = getShadowRoot().host;
+  host.style.top = "-999px";
+  host.style.left = "-999px";
 }
 
 function delay(timeout, func) {
@@ -112,7 +114,7 @@ function showContainer(targetClientRect = null) {
 }
 
 function adjustPosition(selector, targetClientRect) {
-  const element = document.querySelector(selector);
+  const element = getShadowRoot().querySelector(selector);
   const docWidth = document.body.clientWidth;
   const windowHeight = window.innerHeight;
   const extWidth = element.clientWidth;
@@ -143,12 +145,7 @@ function updateContainerContent(contentString) {
   let result = false;
   const container = getContainerNode();
   if (container) {
-    // note the white space in dom,
-    // see: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace_in_the_DOM
-    if (container.firstElementChild) {
-      container.removeChild(container.firstElementChild);
-    }
-    container.insertAdjacentHTML("beforeend", contentString);
+    container.innerHTML = contentString;
     result = true;
   }
 
@@ -206,6 +203,9 @@ function convertFromBingResponseContent(htmlContent, queryString) {
     const contentNode = domParser
       .parseFromString(htmlContent, "text/html")
       .querySelector(".content");
+    if (!contentNode) {
+      throw new Error(ERROR_INVALID_CONTENT);
+    }
     const contentType = getTranslationContentType(contentNode);
     if (contentType === TRANSLATION_CONTENT_INVALID) {
       throw new Error(ERROR_INVALID_CONTENT);
@@ -330,7 +330,6 @@ function getCurrentSelectionRange() {
 
 function getQueryTargetByHovering(event) {
   let range = null,
-    textNode = null,
     rect = null,
     selection = null,
     qstr = null;
@@ -352,15 +351,11 @@ function getQueryTargetByHovering(event) {
       if (range == null || !(range instanceof Range)) {
         return QueryTarget.createNullTarget();
       }
-      textNode = range.startContainer;
-      offset = range.startOffset;
     } else if (document.caretPositionFromPoint) {
       range = document.caretPositionFromPoint(event.clientX, event.clientY);
       if (range == null || !(range instanceof Range)) {
         return QueryTarget.createNullTarget();
       }
-      textNode = range.offsetNode;
-      offset = range.offset;
     } else {
       return QueryTarget.createNullTarget();
     }
@@ -439,12 +434,12 @@ function disableQueryTargetDetect() {
 }
 
 function getContainerNode() {
-  return document.querySelector(containerSelector);
+  return getShadowRoot().querySelector(containerSelector);
 }
 
 function isEventFromBTXContainer(event) {
-  const container = document.querySelector(containerSelector);
-  return container.contains(event.target);
+  const host = getShadowRoot().host;
+  return event.composedPath().includes(host);
 }
 
 function isMouseUpEventTargetIgnorable(targetNode) {
@@ -498,13 +493,13 @@ function isChildOfVolume(targetNode) {
 
 function init() {
   // see:  https://developer.mozilla.org/en-US/docs/Web/API/SecurityPolicyViolationEvent
-  if (document.querySelector(rootSelector)) {
+  if (getShadowRoot()) {
     document.addEventListener("securitypolicyviolation", (_e) => {
       isSecurityPolicyViolationDetected = true;
 
       // hide volume element if security policy violation is detected
       let containerNode = getContainerNode();
-      if (containerNode && containerNode.display != "None") {
+      if (containerNode && containerNode.style.display !== "none") {
         const volumeNodes = containerNode.getElementsByClassName("volume");
         for (let index = 0; index < volumeNodes.length; index++) {
           const volumeNode = volumeNodes[index];

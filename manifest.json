@@ -36,7 +36,6 @@
         "content/init.js",
         "content/contentScript.js"
       ],
-      "css": ["style/main.css"],
       "matches": ["https://*/*", "http://*/*", "file:///*"],
       "run_at": "document_end"
     }
