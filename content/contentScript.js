@@ -387,7 +387,11 @@ function getQueryTargetByHovering(event) {
     oldRanges.forEach((range) => selection.addRange(range));
 
     // get string content of the selection and build the `query target`
-    if (qstr && inRect(rect, event.clientX, event.clientY)) {
+    if (
+      qstr &&
+      isEnglishWord(qstr) &&
+      inRect(rect, event.clientX, event.clientY)
+    ) {
       return new QueryTarget(qstr, rect);
     } else {
       return QueryTarget.createNullTarget();
