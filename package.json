@@ -3,7 +3,8 @@
   "version": "2.1.0",
   "description": "A translator based on Bing dict",
   "scripts": {
-    "genstyle": "npx sass style/  --no-source-map"
+    "genstyle": "npx sass style/  --no-source-map",
+    "test": "node tests/isEnglishWord.test.js"
   },
   "repository": {
     "type": "git",
