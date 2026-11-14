@@ -7,7 +7,7 @@ function element(nodeName, properties = {}) {
   return { nodeName, nodeType: 1, closest: () => null, ...properties };
 }
 
-async function createPage() {
+async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
   const listeners = new Map();
   const intervals = [];
   const requests = [];
@@ -19,13 +19,17 @@ async function createPage() {
   };
   let selectionChanges = 0;
   let selectedText = "";
+  let hoveredText = "";
+  let usingHoverRange = false;
+  let now = Date.now();
+  let onSettingsChanged;
   const selection = {
     rangeCount: 0,
-    toString: () => selectedText,
+    toString: () => selection.rangeCount ? (usingHoverRange ? hoveredText : selectedText) : "",
     getRangeAt: () => caret,
-    empty() { selectionChanges++; this.rangeCount = 0; },
+    empty() { selectionChanges++; this.rangeCount = 0; usingHoverRange = false; },
     addRange() { selectionChanges++; this.rangeCount = 1; },
-    modify() { selectionChanges++; },
+    modify() { selectionChanges++; usingHoverRange = true; },
   };
   const container = { style: { display: "none" }, addEventListener() {} };
   const loading = { style: { display: "none" } };
@@ -48,6 +52,7 @@ async function createPage() {
   const context = vm.createContext({
     document,
     window: { __BTX_SHADOW__: shadow, getSelection: () => selection },
+    Date: class extends Date { static now() { return now; } },
     Node: { ELEMENT_NODE: 1 },
     Range: Object,
     DOMRect: class {
@@ -57,13 +62,15 @@ async function createPage() {
     },
     chrome: {
       dom: { openOrClosedShadowRoot: host => closedRoots.get(host) || null },
+      i18n: { getUILanguage: () => browserLanguage },
       runtime: { sendMessage: (request, callback) => requests.push({ request, callback }) },
       storage: { local: {
         get: (_, callback) => callback({
           enable: true, hover: { enable: true, key: "" },
           container: { backgroundColor: "skyblue" },
+          ...initialSettings,
         }),
-        onChanged: { addListener() {} },
+        onChanged: { addListener(listener) { onSettingsChanged = listener; } },
       } },
     },
     setInterval: callback => { intervals.push(callback); return intervals.length; },
@@ -81,9 +88,11 @@ async function createPage() {
   return {
     context, document, body, text, caret, closedRoots, requests, container, loading,
     dispatch,
-    tick: () => intervals.forEach(callback => callback()),
+    tick: (ms = 0) => { now += ms; intervals.forEach(callback => callback()); },
     changes: () => selectionChanges,
     select: text => { selectedText = text; selection.rangeCount = text ? 1 : 0; },
+    hover: text => { hoveredText = text; dispatch("mousemove"); },
+    setLanguageFilter: value => onSettingsChanged({ skipBrowserLanguage: { newValue: value } }),
     seedQuery: () => vm.runInContext(`
       lastQueryTarget = new QueryTarget("hello", ${JSON.stringify(rect)});
       lastQueryTarget.createdTime -= 500;
@@ -91,7 +100,7 @@ async function createPage() {
   };
 }
 
-async function main() {
+async function testInputFocus() {
   for (const control of [
     element("INPUT"),
     element("TEXTAREA"),
@@ -188,6 +197,67 @@ async function main() {
   }
 
   console.log("Input focus regression tests passed");
+}
+
+async function testLanguageFilter() {
+  const cases = [
+    ["zh-CN", {}, "hello", true],
+    ["zh-TW", {}, "你好", false],
+    ["en-US", {}, "你好", true],
+    ["en-GB", {}, "hello", false],
+    ["fr-CA", {}, "hello", true],
+    ["fr-CA", {}, "你好", true],
+    ["en-US", { skipBrowserLanguage: false }, "hello", true],
+    ["zh-CN", { skipBrowserLanguage: false }, "你好", true],
+  ];
+
+  for (const [locale, settings, text, expected] of cases) {
+    for (const trigger of ["hover", "selection"]) {
+      const page = await createPage(locale, settings);
+      if (trigger === "hover") {
+        page.hover(text);
+        page.tick(350);
+      } else {
+        page.select(text);
+        page.dispatch("mouseup");
+        page.tick();
+      }
+
+      assert.deepStrictEqual(
+        page.requests.map(({ request }) => request.queryString),
+        expected ? [text] : [],
+        `${locale} ${trigger} for ${text} with ${JSON.stringify(settings)}`,
+      );
+    }
+  }
+
+  const page = await createPage("en-US");
+  page.hover("hello");
+  page.tick(350);
+  assert.strictEqual(page.requests.length, 0);
+
+  page.setLanguageFilter(false);
+  page.hover("hello");
+  page.tick(350);
+  assert.strictEqual(page.requests[0].request.queryString, "hello");
+
+  page.setLanguageFilter(true);
+  assert.strictEqual(page.loading.style.display, "none");
+
+  page.setLanguageFilter(false);
+  page.hover("hello");
+  page.tick(350);
+  assert.strictEqual(page.requests.length, 2);
+  page.context.convertFromBingResponseContent = () => { throw new Error("filtered response rendered"); };
+  page.requests[0].callback({ status: 0, data: "late dictionary response" });
+  assert.strictEqual(page.container.style.display, "none");
+
+  console.log("Browser language filter regression tests passed");
+}
+
+async function main() {
+  await testInputFocus();
+  await testLanguageFilter();
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; });

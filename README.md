@@ -4,6 +4,10 @@
 
 A Chrome extension for Chinese-English/English-Chinese translating. Support mouse hovering and selection.Based on https://www.bing.com/dict.
 
+默认根据浏览器显示语言翻译另一种语言：中文界面查英文，英文界面查中文。可在扩展设置中关闭「跳过浏览器显示语言」，使用双向翻译。其他界面语言默认支持双向翻译。
+
+By default, hover and selection lookups use your browser’s display language: a Chinese interface looks up English, and an English interface looks up Chinese. Turn off **Skip my browser language** in the extension settings to look up both languages. Both directions are available by default with other display languages.
+
 ## 安装 ( Installation )
 
 * Chrome web store:  https://chromewebstore.google.com/detail/bingtranslatorx/jjeahpiblnooclghjhjmcdhlmmfpdjkh

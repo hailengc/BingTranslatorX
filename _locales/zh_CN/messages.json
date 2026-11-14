@@ -5,6 +5,9 @@
   "enable": {
     "message": "启用"
   },
+  "skipBrowserLanguage": {
+    "message": "跳过浏览器显示语言"
+  },
   "translate_when_hovering_on_word": {
     "message": "鼠标悬浮取词"
   },

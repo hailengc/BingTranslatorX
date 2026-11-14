@@ -1,5 +1,6 @@
 const defaultSetting = {
   enable: true,
+  skipBrowserLanguage: true,
   hover: {
     enable: true,
     key: "",
@@ -12,8 +13,10 @@ const defaultSetting = {
 const queryHost = "https://cn.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set(defaultSetting);
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === "install") {
+    chrome.storage.local.set(defaultSetting);
+  }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

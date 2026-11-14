@@ -5,6 +5,9 @@
   "enable": {
     "message": "Enable"
   },
+  "skipBrowserLanguage": {
+    "message": "Skip my browser language"
+  },
   "translate_when_hovering_on_word": {
     "message": "Translate when hovering on word"
   },

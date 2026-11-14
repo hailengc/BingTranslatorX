@@ -15,6 +15,17 @@ let lastQueryTarget = QueryTarget.createNullTarget();
 
 // the extension setting
 let extSetting = null;
+const browserLanguage = chrome.i18n.getUILanguage().toLowerCase().split(/[-_]/)[0];
+
+function canTranslateText(text) {
+  if (extSetting.skipBrowserLanguage !== false) {
+    // Bing Dictionary translates between English and Chinese. Script checks
+    // work for short hover targets, where language detection is unreliable.
+    if (browserLanguage === "zh") return /\p{Script=Latin}/u.test(text);
+    if (browserLanguage === "en") return /\p{Script=Han}/u.test(text);
+  }
+  return true;
+}
 
 // if a security policy violation is detected
 // for now, use this to skip the audio play, this means we don't render the audio element in the template
@@ -337,7 +348,7 @@ function queryAndShow(queryTarget) {
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     (response) => {
-      if (!queryTarget.equalTo(lastQueryTarget) || isComposing) {
+      if (queryTarget !== lastQueryTarget || isComposing) {
         return;
       }
       const htmlContent =
@@ -347,10 +358,7 @@ function queryAndShow(queryTarget) {
         queryString
       );
       if (convertedContent && updateContainerContent(convertedContent)) {
-        // check if still the same queryTarget
-        if (queryTarget.equalTo(lastQueryTarget)) {
-          showContainer(queryTarget.targetClientRect);
-        }
+        showContainer(queryTarget.targetClientRect);
       }
     }
   );
@@ -431,8 +439,8 @@ function getQueryTargetByHovering(event) {
 
     // get string content of the selection and build the `query target`
     if (
-      qstr &&
-      isEnglishWord(qstr) &&
+      /\p{L}/u.test(qstr) &&
+      canTranslateText(qstr) &&
       inRect(rect, event.clientX, event.clientY)
     ) {
       return new QueryTarget(qstr, rect);
@@ -619,7 +627,7 @@ function init() {
 
         const selection = window.getSelection();
         const selectedString = selection.toString().trim();
-        if (selectedString) {
+        if (selectedString && canTranslateText(selectedString)) {
           let clientRect = getSeletionClientRect(selection);
           if (
             isMouseUpEventTargetIgnorable(event.target) ||
@@ -631,7 +639,7 @@ function init() {
           }
           lastQueryTarget = new QueryTarget(selectedString, clientRect);
         } else {
-          lastQueryTarget = QueryTarget.createNullTarget();
+          cancelPendingQuery();
         }
       },
       { passive: true }
@@ -718,6 +726,13 @@ function init() {
         //   storageChange.newValue
         // );
         extSetting[key] = storageChange.newValue;
+      }
+      if (
+        changes.skipBrowserLanguage &&
+        lastQueryTarget.isValid &&
+        !canTranslateText(lastQueryTarget.targetString)
+      ) {
+        cancelPendingQuery();
       }
     });
   }
