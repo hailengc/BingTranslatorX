@@ -4,7 +4,7 @@
   "description": "A translator based on Bing dict",
   "scripts": {
     "genstyle": "npx sass style/  --no-source-map",
-    "test": "node tests/isEnglishWord.test.js"
+    "test": "node tests/isEnglishWord.test.js && node tests/inputFocus.test.js"
   },
   "repository": {
     "type": "git",

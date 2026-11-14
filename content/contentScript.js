@@ -8,6 +8,8 @@ function getShadowRoot() {
 // flag tells if a selection is in progress
 let isSelecting = false;
 
+let isComposing = false;
+
 // the latest query target
 let lastQueryTarget = QueryTarget.createNullTarget();
 
@@ -40,6 +42,37 @@ function getSeletionClientRect(selection) {
 
 function hasValidSelection() {
   return isStringValid(window.getSelection().toString());
+}
+
+function isEditableElement(element) {
+  return !!element && (
+    element.nodeName === "INPUT" ||
+    element.nodeName === "TEXTAREA" ||
+    element.isContentEditable ||
+    !!element.closest?.('[role="textbox"]')
+  );
+}
+
+function hasEditableFocus() {
+  if (document.designMode === "on") {
+    return true;
+  }
+
+  let element = document.activeElement;
+  while (element) {
+    if (isEditableElement(element)) {
+      return true;
+    }
+    // activeElement is retargeted to the host for controls inside shadow DOM.
+    const shadow = element.shadowRoot || chrome.dom?.openOrClosedShadowRoot(element);
+    element = shadow?.activeElement;
+  }
+  return false;
+}
+
+function cancelPendingQuery() {
+  lastQueryTarget = QueryTarget.createNullTarget();
+  hideAll();
 }
 
 function isDisplay(selector) {
@@ -288,7 +321,7 @@ function convertFromBingResponseContent(htmlContent, queryString) {
 }
 
 function queryAndShow(queryTarget) {
-  if (!extSetting.enable) {
+  if (!extSetting.enable || isComposing) {
     return;
   }
 
@@ -304,6 +337,9 @@ function queryAndShow(queryTarget) {
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     (response) => {
+      if (!queryTarget.equalTo(lastQueryTarget) || isComposing) {
+        return;
+      }
       const htmlContent =
         response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
       const convertedContent = convertFromBingResponseContent(
@@ -335,11 +371,12 @@ function getQueryTargetByHovering(event) {
     qstr = null;
 
   if (
-    event.target.nodeName === "INPUT" ||
-    event.target.nodeName === "TEXTAREA"
+    isComposing ||
+    hasEditableFocus() ||
+    event.composedPath().some(isEditableElement)
   ) {
-    // TODO: how to fix?
-    // The challenge is couldn't find a way to get caret postion without mouse click.
+    // Word detection temporarily changes the page selection, which can move
+    // focus or end IME composition even when the original range is restored.
     return QueryTarget.createNullTarget();
   } else {
     // convert hover caret position to client X and Y
@@ -357,6 +394,12 @@ function getQueryTargetByHovering(event) {
         return QueryTarget.createNullTarget();
       }
     } else {
+      return QueryTarget.createNullTarget();
+    }
+    const caretElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? range.startContainer
+      : range.startContainer.parentElement;
+    if (isEditableElement(caretElement)) {
       return QueryTarget.createNullTarget();
     }
     // use a selection object to hold the range we just got and expand it to a word
@@ -516,6 +559,21 @@ function init() {
 
     document.addEventListener("selectstart", startSelecting);
 
+    document.addEventListener("focusin", () => {
+      if (hasEditableFocus()) {
+        cancelPendingQuery();
+      }
+    }, true);
+
+    document.addEventListener("compositionstart", () => {
+      isComposing = true;
+      cancelPendingQuery();
+    }, true);
+
+    document.addEventListener("compositionend", () => {
+      isComposing = false;
+    }, true);
+
     // TODO: try handle select event from input elements include Input and Textarea but failed, see comments below.
     // document.addEventListener(
     //   "select",
@@ -603,9 +661,7 @@ function init() {
           isHoveringEnable(event) &&
           !isSelecting &&
           !hasValidSelection() &&
-          !isEventFromBTXContainer(event) &&
-          document.activeElement.nodeName !== "INPUT" &&
-          document.activeElement.nodeName !== "TEXTAREA"
+          !isEventFromBTXContainer(event)
         ) {
           const queryTarget = getQueryTargetByHovering(event);
           if (!queryTarget.equalTo(lastQueryTarget)) {
