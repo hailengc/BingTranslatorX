@@ -28,5 +28,59 @@
   },
   "bugReport": {
     "message": "Bug Report"
+  },
+  "selectionTranslationUnavailable": {
+    "message": "On-device translation is unavailable on this page or browser."
+  },
+  "selectionTranslationSetup": {
+    "message": "The browser requires a click to start translation on this page."
+  },
+  "selectionTranslationDownloading": {
+    "message": "Downloading translation files…"
+  },
+  "selectionTranslationFailed": {
+    "message": "The browser couldn’t translate this selection."
+  },
+  "translateSelection": {
+    "message": "Translate"
+  },
+  "retrySelectionTranslation": {
+    "message": "Try again"
+  },
+  "translationSetupTitle": {
+    "message": "New in BingTranslatorX: Text translation"
+  },
+  "translationSetupDescription": {
+    "message": "Translate phrases, sentences, and paragraphs between English and Simplified Chinese. Enabling text translation downloads a language pack to your device. You can change this anytime in Settings."
+  },
+  "translationSetupEnable": {
+    "message": "Enable text translation"
+  },
+  "translationSetupSkip": {
+    "message": "Not now"
+  },
+  "translationSetupPreparing": {
+    "message": "Preparing text translation…"
+  },
+  "translationSetupReady": {
+    "message": "Text translation is ready. You can close this tab."
+  },
+  "translationSetupUnavailable": {
+    "message": "This browser can’t download the language pack. Try an up-to-date version of Chrome or Edge."
+  },
+  "translationSetupFailed": {
+    "message": "The browser couldn’t prepare the language pack. Try again."
+  },
+  "selectionTranslationLabel": {
+    "message": "Text translation"
+  },
+  "selectionTranslationHint": {
+    "message": "Translate phrases, sentences, and paragraphs on your device. The browser downloads a language pack when needed."
+  },
+  "translationSettingsReady": {
+    "message": "Text translation is ready."
+  },
+  "translationSettingsFailed": {
+    "message": "The browser couldn’t prepare the language pack. Toggle text translation off and on to try again."
   }
 }

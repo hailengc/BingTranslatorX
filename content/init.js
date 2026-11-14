@@ -91,6 +91,23 @@ const __BTX_SHADOW_CSS__ = `
   font-size: 14px;
   padding: 3px;
 }
+.ext-bt-container .selection-translation {
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 12px));
+  max-height: 45vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  font-size: 14px;
+}
+.ext-bt-container .selection-translation-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ext-bt-container .selection-translation button {
+  margin-top: 6px;
+}
 .loading {
   position: fixed;
   z-index: 999999999;

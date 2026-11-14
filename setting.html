@@ -53,6 +53,12 @@
                   </select>
                 </div>
               </li>
+              <li>
+                <input type="checkbox" id="cbSelectionTranslation" aria-describedby="selectionTranslationHint" />
+                <label for="cbSelectionTranslation" data-i18n="selectionTranslationLabel"></label>
+                <div id="selectionTranslationHint" data-i18n="selectionTranslationHint"></div>
+                <div id="selectionTranslationStatus" role="status"></div>
+              </li>
             </ul>
           </div>
 
@@ -83,6 +89,7 @@
       </div>
     </div>
     <script src="lib/util.js"></script>
+    <script src="lib/prepare-translation.js"></script>
     <script src="setting.js"></script>
   </body>
 </html>

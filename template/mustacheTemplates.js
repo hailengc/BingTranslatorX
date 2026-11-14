@@ -49,6 +49,15 @@ const multiWordTemplate = `
 </div>
 `;
 
+const selectionTranslationTemplate = `
+<div class="selection-translation">
+  <div class="selection-translation-text">{{translation}}</div>
+  {{#action}}
+  <button type="button" data-translate-selection>{{action}}</button>
+  {{/action}}
+</div>
+`;
+
 const noContentTemplate = `
 <div class="no-content">
   <span>{{message}}</span>

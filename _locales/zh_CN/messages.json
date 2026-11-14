@@ -28,5 +28,59 @@
   },
   "bugReport": {
     "message": "问题报告"
+  },
+  "selectionTranslationUnavailable": {
+    "message": "此页面或浏览器无法使用本地翻译。"
+  },
+  "selectionTranslationSetup": {
+    "message": "浏览器需要点击确认，才能在此页面开始翻译。"
+  },
+  "selectionTranslationDownloading": {
+    "message": "正在下载翻译文件…"
+  },
+  "selectionTranslationFailed": {
+    "message": "浏览器无法翻译选中的文字。"
+  },
+  "translateSelection": {
+    "message": "翻译"
+  },
+  "retrySelectionTranslation": {
+    "message": "重试"
+  },
+  "translationSetupTitle": {
+    "message": "BingTranslatorX 新功能：文本翻译"
+  },
+  "translationSetupDescription": {
+    "message": "支持短语、句子和段落的英汉互译。开启后，浏览器会将语言包下载到设备。你可以随时在设置中更改此选项。"
+  },
+  "translationSetupEnable": {
+    "message": "开启文本翻译"
+  },
+  "translationSetupSkip": {
+    "message": "暂不开启"
+  },
+  "translationSetupPreparing": {
+    "message": "正在准备文本翻译…"
+  },
+  "translationSetupReady": {
+    "message": "文本翻译已就绪，可以关闭此标签页。"
+  },
+  "translationSetupUnavailable": {
+    "message": "此浏览器无法下载语言包。请尝试使用最新版 Chrome 或 Edge。"
+  },
+  "translationSetupFailed": {
+    "message": "浏览器无法准备语言包，请重试。"
+  },
+  "selectionTranslationLabel": {
+    "message": "文本翻译"
+  },
+  "selectionTranslationHint": {
+    "message": "在设备上翻译短语、句子和段落。浏览器会按需下载语言包。"
+  },
+  "translationSettingsReady": {
+    "message": "文本翻译已就绪。"
+  },
+  "translationSettingsFailed": {
+    "message": "浏览器无法准备语言包。请关闭文本翻译后重新开启。"
   }
 }

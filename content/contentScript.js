@@ -1,8 +1,23 @@
 const containerSelector = ".ext-bt-container";
 const loadingSelector = ".loading";
+const contentEvents = new AbortController();
 
 function getShadowRoot() {
   return window.__BTX_SHADOW__;
+}
+
+function isExtensionContextActive() {
+  if (chrome.runtime?.id) {
+    return true;
+  }
+
+  // Chrome can leave content scripts running in open pages after an extension reload.
+  if (!contentEvents.signal.aborted) {
+    contentEvents.abort();
+    disableQueryTargetDetect();
+    getShadowRoot()?.host.remove();
+  }
+  return false;
 }
 
 // flag tells if a selection is in progress
@@ -177,12 +192,11 @@ function adjustPosition(selector, targetClientRect) {
     element.style.left = targetClientRect.left + "px";
   }
 
-  const verticalOffset = targetClientRect.bottom + extHeight - windowHeight;
-  if (verticalOffset > 0) {
-    element.style.top = targetClientRect.top - extHeight + "px";
-  } else {
-    element.style.top = targetClientRect.bottom + "px";
-  }
+  const maxTop = windowHeight - extHeight;
+  const top = targetClientRect.bottom <= maxTop
+    ? targetClientRect.bottom
+    : targetClientRect.top - extHeight;
+  element.style.top = Math.max(0, Math.min(top, maxTop)) + "px";
 }
 
 function updateContainerContent(contentString) {
@@ -331,8 +345,104 @@ function convertFromBingResponseContent(htmlContent, queryString) {
   return convertedContent;
 }
 
+const wordSegmenter = new Intl.Segmenter("zh", { granularity: "word" });
+
+function getSelectionTranslationLanguages(text) {
+  const firstWord = wordSegmenter.segment(text).containing(0);
+  if (
+    /^[A-Za-z]+(?:['’-][A-Za-z]+)*$/.test(text) ||
+    (firstWord?.isWordLike && firstWord.segment === text)
+  ) {
+    return null;
+  }
+
+  return /\p{Script=Han}/u.test(text)
+    ? { sourceLanguage: "zh", targetLanguage: "en" }
+    : { sourceLanguage: "en", targetLanguage: "zh" };
+}
+
+async function translateSelection(queryTarget, languages) {
+  if (!extSetting.selectionTranslationEnabled) {
+    hideAll();
+    return;
+  }
+
+  const { targetString, targetClientRect } = queryTarget;
+  showLoading(targetClientRect);
+
+  const isCurrent = () =>
+    isExtensionContextActive() &&
+    extSetting.enable &&
+    extSetting.selectionTranslationEnabled &&
+    queryTarget === lastQueryTarget &&
+    !isSelecting &&
+    !isComposing &&
+    window.getSelection()?.toString().trim() === targetString &&
+    isUIShowing();
+
+  const show = (translation, action) => {
+    if (!isCurrent()) {
+      return;
+    }
+    updateContainerContent(
+      Mustache.render(selectionTranslationTemplate, { translation, action })
+    );
+    showContainer(targetClientRect);
+  };
+
+  const message = chrome.i18n.getMessage;
+  const showMessage = (key, actionKey) => {
+    if (isCurrent()) {
+      show(message(key), actionKey && message(actionKey));
+    }
+  };
+
+  let translator;
+  try {
+    const availability = await globalThis.Translator?.availability(languages);
+    if (!isCurrent()) {
+      return;
+    }
+    if (!availability || availability === "unavailable") {
+      showMessage("selectionTranslationUnavailable");
+      return;
+    }
+    if (availability === "downloadable" || availability === "downloading") {
+      if (!navigator.userActivation.isActive) {
+        showMessage("selectionTranslationSetup", "translateSelection");
+        return;
+      }
+    }
+
+    translator = await globalThis.Translator.create({
+      ...languages,
+      monitor(monitor) {
+        // Chrome can report a cached language pack as downloadable on a new site.
+        const onProgress = ({ loaded, total }) => {
+          if (loaded > 0 && loaded < total) {
+            showMessage("selectionTranslationDownloading");
+            monitor.removeEventListener("downloadprogress", onProgress);
+          }
+        };
+        monitor.addEventListener("downloadprogress", onProgress);
+      },
+    });
+    if (isCurrent()) {
+      show(await translator.translate(targetString));
+    }
+  } catch (error) {
+    if (error.name === "NotAllowedError" && !navigator.userActivation.isActive) {
+      showMessage("selectionTranslationSetup", "translateSelection");
+    } else {
+      showMessage("selectionTranslationFailed", "retrySelectionTranslation");
+    }
+  } finally {
+    translator?.destroy();
+  }
+}
+
 function queryAndShow(queryTarget) {
-  if (!extSetting.enable || isComposing) {
+  if (!isExtensionContextActive() || !extSetting.enable || isComposing) {
     return;
   }
 
@@ -341,18 +451,28 @@ function queryAndShow(queryTarget) {
   }
   queryTarget.isActive = true;
 
-  const targetClientRect = queryTarget.targetClientRect;
-  showLoading(targetClientRect);
-
   const queryString = queryTarget.targetString;
+  const languages = queryTarget.fromSelection && getSelectionTranslationLanguages(queryString);
+  if (languages) {
+    translateSelection(queryTarget, languages);
+    return;
+  }
+
+  showLoading(queryTarget.targetClientRect);
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     (response) => {
+      if (!isExtensionContextActive()) {
+        return;
+      }
+      const lastError = chrome.runtime.lastError;
       if (queryTarget !== lastQueryTarget || isComposing) {
         return;
       }
       const htmlContent =
-        response.status === 0 ? response.data : ERROR_NETWORK_ERROR;
+        !lastError && response?.status === 0
+          ? response.data
+          : ERROR_NETWORK_ERROR;
       const convertedContent = convertFromBingResponseContent(
         htmlContent,
         queryString
@@ -466,7 +586,7 @@ function enableQueryTargetDetect() {
   queryTargetDetectInterval =
     queryTargetDetectInterval ||
     setInterval(() => {
-      if (isSelecting) {
+      if (!isExtensionContextActive() || isSelecting) {
         return;
       } else if (hasValidSelection()) {
         queryAndShow(lastQueryTarget);
@@ -548,7 +668,8 @@ function isChildOfVolume(targetNode) {
 
 function init() {
   // see:  https://developer.mozilla.org/en-US/docs/Web/API/SecurityPolicyViolationEvent
-  if (getShadowRoot()) {
+  if (isExtensionContextActive() && getShadowRoot()) {
+    const { signal } = contentEvents;
     document.addEventListener("securitypolicyviolation", (_e) => {
       isSecurityPolicyViolationDetected = true;
 
@@ -561,26 +682,26 @@ function init() {
           volumeNode.style.display = "none";
         }
       }
-    });
+    }, { signal });
 
     enableQueryTargetDetect();
 
-    document.addEventListener("selectstart", startSelecting);
+    document.addEventListener("selectstart", startSelecting, { signal });
 
     document.addEventListener("focusin", () => {
       if (hasEditableFocus()) {
         cancelPendingQuery();
       }
-    }, true);
+    }, { capture: true, signal });
 
     document.addEventListener("compositionstart", () => {
       isComposing = true;
       cancelPendingQuery();
-    }, true);
+    }, { capture: true, signal });
 
     document.addEventListener("compositionend", () => {
       isComposing = false;
-    }, true);
+    }, { capture: true, signal });
 
     // TODO: try handle select event from input elements include Input and Textarea but failed, see comments below.
     // document.addEventListener(
@@ -637,12 +758,12 @@ function init() {
             // just create a small "anchor rect" so that we can show our container accordingly
             clientRect = new DOMRect(event.clientX, event.clientY, 10, 10);
           }
-          lastQueryTarget = new QueryTarget(selectedString, clientRect);
+          lastQueryTarget = new QueryTarget(selectedString, clientRect, true);
         } else {
           cancelPendingQuery();
         }
       },
-      { passive: true }
+      { passive: true, signal }
     );
 
     document.addEventListener("keyup", (event) => {
@@ -652,14 +773,14 @@ function init() {
           hideAll();
         }
       }
-    });
+    }, { signal });
 
     document.addEventListener(
       "scroll",
       (event) => {
         hideAll();
       },
-      { passive: true, capture: true }
+      { passive: true, capture: true, signal }
     );
 
     document.addEventListener(
@@ -677,12 +798,30 @@ function init() {
           }
         }
       },
-      { passive: true }
+      { passive: true, signal }
     );
 
+    getContainerNode().addEventListener("mousedown", (event) => {
+      if (event.target.matches("[data-translate-selection]")) {
+        event.preventDefault();
+      }
+    }, { signal });
+
     getContainerNode().addEventListener("click", (event) => {
+      if (!isExtensionContextActive()) {
+        return;
+      }
       const target = event.target;
-      if (target.nodeName === "A") {
+      if (target.matches("[data-translate-selection]")) {
+        const queryTarget = lastQueryTarget;
+        const selectedText = window.getSelection()?.toString().trim();
+        if (extSetting.enable && !isComposing && selectedText === queryTarget.targetString) {
+          const languages = getSelectionTranslationLanguages(selectedText);
+          if (languages) {
+            translateSelection(queryTarget, languages);
+          }
+        }
+      } else if (target.nodeName === "A") {
         const href = target.getAttribute("href");
         if (href) {
           if (queryUrlTestExp.test(href)) {
@@ -697,7 +836,7 @@ function init() {
 
       event.preventDefault();
       event.stopPropagation();
-    });
+    }, { signal });
 
     // NOTE: Let's disable hovering to play, mainly because:
     // "Uncaught (in promise) DOMException: play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
@@ -733,6 +872,14 @@ function init() {
         !canTranslateText(lastQueryTarget.targetString)
       ) {
         cancelPendingQuery();
+      } else if (
+        changes.selectionTranslationEnabled &&
+        !extSetting.selectionTranslationEnabled &&
+        lastQueryTarget.isValid &&
+        lastQueryTarget.fromSelection &&
+        getSelectionTranslationLanguages(lastQueryTarget.targetString)
+      ) {
+        hideAll();
       }
     });
   }

@@ -23,6 +23,9 @@ cbEnableExt.optionChildren = [
 ];
 
 const closeButton = document.getElementById("closeButton");
+const cbSelectionTranslation = document.getElementById("cbSelectionTranslation");
+const selectionTranslationStatus = document.getElementById("selectionTranslationStatus");
+let translationPreparation;
 
 // add event handler
 cbEnableExt.onclick = (event) => {
@@ -55,7 +58,49 @@ selBackgroundColor.onchange = (event) => {
   saveSetting({ container: extensionSetting.container });
 };
 
-closeButton.onclick = (event) => {
+cbSelectionTranslation.addEventListener("change", async () => {
+  const enabled = cbSelectionTranslation.checked;
+  if (!enabled) {
+    translationPreparation?.abort();
+    selectionTranslationStatus.textContent = "";
+    await chrome.storage.local.set({ selectionTranslationEnabled: false });
+    return;
+  }
+
+  const controller = new AbortController();
+  translationPreparation = controller;
+  selectionTranslationStatus.textContent = i18n("translationSetupPreparing");
+  try {
+    await Promise.all([
+      chrome.storage.local.set({ selectionTranslationEnabled: true }),
+      prepareSelectionTranslation({ signal: controller.signal }),
+    ]);
+    if (!controller.signal.aborted) {
+      selectionTranslationStatus.textContent = i18n("translationSettingsReady");
+    }
+  } catch {
+    if (!controller.signal.aborted) {
+      selectionTranslationStatus.textContent = i18n("translationSettingsFailed");
+    }
+  } finally {
+    if (translationPreparation === controller) {
+      translationPreparation = undefined;
+    }
+  }
+});
+
+chrome.storage.local.onChanged.addListener(({ selectionTranslationEnabled }) => {
+  if (!selectionTranslationEnabled) {
+    return;
+  }
+  cbSelectionTranslation.checked = selectionTranslationEnabled.newValue === true;
+  if (!cbSelectionTranslation.checked) {
+    translationPreparation?.abort();
+    selectionTranslationStatus.textContent = "";
+  }
+});
+
+closeButton.onclick = () => {
   window.close();
 };
 
@@ -88,6 +133,7 @@ function updateFormWithSetting(setting) {
   toggleCheckBox(cbEnableHovering, setting.hover.enable);
   selAuxKey.value = setting.hover.key;
   selBackgroundColor.value = setting.container.backgroundColor;
+  cbSelectionTranslation.checked = setting.selectionTranslationEnabled === true;
   main.style.backgroundColor = setting.container.backgroundColor;
 }
 

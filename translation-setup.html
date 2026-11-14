@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BingTranslatorX</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+
+      main {
+        max-width: 34rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+      }
+
+      h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+        line-height: 1.25;
+        margin: 0 0 1rem;
+      }
+
+      p {
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 0.625rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        cursor: pointer;
+      }
+
+      button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 3px;
+      }
+
+      #download {
+        background-color: #1d4ed8;
+        color: #fff;
+      }
+
+      #download:hover:enabled {
+        background-color: #1e40af;
+      }
+
+      #skip {
+        background-color: Canvas;
+        border-color: GrayText;
+        color: CanvasText;
+      }
+
+      #skip:hover:enabled {
+        background-color: color-mix(in srgb, Canvas 93%, CanvasText);
+      }
+
+      button:disabled {
+        cursor: default;
+        opacity: 0.55;
+      }
+    </style>
+    <script src="lib/prepare-translation.js" defer></script>
+    <script src="translation-setup.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <h1>
+        <span aria-hidden="true">🎉</span>
+        <span data-i18n="translationSetupTitle"></span>
+      </h1>
+      <p data-i18n="translationSetupDescription"></p>
+      <div class="actions">
+        <button type="button" id="download" hidden data-i18n="translationSetupEnable"></button>
+        <button type="button" id="skip" data-i18n="translationSetupSkip"></button>
+      </div>
+      <p id="status" role="status"></p>
+      <progress id="progress" hidden></progress>
+    </main>
+  </body>
+</html>

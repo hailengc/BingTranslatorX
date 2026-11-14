@@ -13,10 +13,26 @@ const defaultSetting = {
 const queryHost = "https://cn.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
-chrome.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === "install") {
-    chrome.storage.local.set(defaultSetting);
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason !== "install" && reason !== "update") {
+    return;
   }
+
+  if (reason === "install") {
+    await chrome.storage.local.set(defaultSetting);
+  }
+
+  const { selectionTranslationPromptShown, selectionTranslationEnabled } =
+    await chrome.storage.local.get([
+      "selectionTranslationPromptShown",
+      "selectionTranslationEnabled",
+    ]);
+  if (selectionTranslationPromptShown || selectionTranslationEnabled !== undefined) {
+    return;
+  }
+
+  await chrome.tabs.create({ url: chrome.runtime.getURL("translation-setup.html") });
+  await chrome.storage.local.set({ selectionTranslationPromptShown: true });
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

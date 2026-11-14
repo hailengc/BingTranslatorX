@@ -11,6 +11,7 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
   const listeners = new Map();
   const intervals = [];
   const requests = [];
+  const translations = [];
   const rect = { left: 0, right: 100, top: 0, bottom: 20, width: 100 };
   const text = element("P");
   const caret = {
@@ -53,6 +54,7 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
     document,
     window: { __BTX_SHADOW__: shadow, getSelection: () => selection },
     Date: class extends Date { static now() { return now; } },
+    AbortController,
     Node: { ELEMENT_NODE: 1 },
     Range: Object,
     DOMRect: class {
@@ -63,7 +65,7 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
     chrome: {
       dom: { openOrClosedShadowRoot: host => closedRoots.get(host) || null },
       i18n: { getUILanguage: () => browserLanguage },
-      runtime: { sendMessage: (request, callback) => requests.push({ request, callback }) },
+      runtime: { id: "test-extension", sendMessage: (request, callback) => requests.push({ request, callback }) },
       storage: { local: {
         get: (_, callback) => callback({
           enable: true, hover: { enable: true, key: "" },
@@ -73,9 +75,20 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
         onChanged: { addListener(listener) { onSettingsChanged = listener; } },
       } },
     },
+    Translator: {
+      availability: async () => "available",
+      create: async () => ({
+        async translate(text) {
+          translations.push(text);
+          return "translated text";
+        },
+        destroy() {},
+      }),
+    },
+    Mustache: { render: (_, { translation }) => translation },
     setInterval: callback => { intervals.push(callback); return intervals.length; },
   });
-  for (const file of ["lib/util.js", "lib/QueryTarget.js", "content/contentScript.js"]) {
+  for (const file of ["lib/util.js", "lib/QueryTarget.js", "template/mustacheTemplates.js", "content/contentScript.js"]) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, "..", file), "utf8"), context);
   }
   // init() runs after the stored settings have loaded.
@@ -86,7 +99,7 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
     for (const listener of listeners.get(type) || []) listener(event);
   };
   return {
-    context, document, body, text, caret, closedRoots, requests, container, loading,
+    context, document, body, text, caret, closedRoots, requests, translations, container, loading,
     dispatch,
     tick: (ms = 0) => { now += ms; intervals.forEach(callback => callback()); },
     changes: () => selectionChanges,
@@ -188,12 +201,26 @@ async function testInputFocus() {
   }
 
   {
-    const page = await createPage();
+    const page = await createPage("zh-CN", { selectionTranslationEnabled: true });
     page.document.activeElement = element("INPUT");
     page.select("selected text");
     page.dispatch("mouseup", page.document.activeElement);
     page.tick();
-    assert.strictEqual(page.requests[0].request.queryString, "selected text", "explicit selection translation must remain available in inputs");
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepStrictEqual(page.translations, ["selected text"], "opted-in selection translation must remain available in inputs");
+    assert.strictEqual(page.container.innerHTML, "translated text");
+    assert.strictEqual(page.requests.length, 0);
+  }
+
+  {
+    const page = await createPage("zh-CN", { selectionTranslationEnabled: false });
+    page.select("selected text");
+    page.dispatch("mouseup");
+    page.tick();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepStrictEqual(page.translations, [], "selecting a sentence must respect opt-out");
+    assert.strictEqual(page.requests.length, 0);
+    assert.strictEqual(page.loading.style.display, "none");
   }
 
   console.log("Input focus regression tests passed");
