@@ -41,6 +41,7 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
   const body = element("BODY");
   const document = {
     body,
+    documentElement: { clientWidth: 1024 },
     activeElement: body,
     designMode: "off",
     caretRangeFromPoint: () => caret,

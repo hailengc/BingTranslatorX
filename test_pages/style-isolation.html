@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" dir="rtl">
+  <meta charset="utf-8">
+  <title>Popup style isolation test</title>
+  <style>
+    html {
+      font: italic 32px / 3 monospace;
+      letter-spacing: 5px;
+    }
+    body {
+      width: 60%;
+      transform: translateX(24px);
+      overflow: hidden;
+    }
+    div, span, ul, li, a, button {
+      color: magenta !important;
+      font-size: 48px !important;
+    }
+    #__EXT_BT_ROOT__ {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    #__EXT_BT_ROOT__::before {
+      content: "Page content on the popup host" !important;
+    }
+  </style>
+  <body>
+    <p dir="ltr">Select <strong id="word">translation</strong> to check the popup.</p>
+  </body>
+</html>

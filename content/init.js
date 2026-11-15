@@ -1,6 +1,19 @@
 const __BTX_SHADOW_CSS__ = `
+/* Important rules on the shadow side win over page rules on the host. */
+:host {
+  all: initial !important;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999999 !important;
+  pointer-events: none !important;
+}
+:host::before, :host::after {
+  content: none !important;
+}
 .ext-bt-container {
-  z-index: 999999999;
+  pointer-events: auto;
   border: 1px solid grey;
   position: fixed;
   font-family: Arial, Helvetica, sans-serif;
@@ -110,7 +123,6 @@ const __BTX_SHADOW_CSS__ = `
 }
 .loading {
   position: fixed;
-  z-index: 999999999;
 }
 .loading img {
   height: 30px !important;
@@ -120,7 +132,6 @@ const __BTX_SHADOW_CSS__ = `
 if (document.body) {
   const host = document.createElement("div");
   host.id = "__EXT_BT_ROOT__";
-  document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "closed" });
   shadow.innerHTML = `
@@ -130,6 +141,8 @@ if (document.body) {
       <img src="${chrome.runtime.getURL("images/loading.svg")}" />
     </div>
   `;
+  // Body transforms, filters and clipping can affect even fixed descendants.
+  document.documentElement.append(host);
   window.__BTX_SHADOW__ = shadow;
 } else {
   console.log(

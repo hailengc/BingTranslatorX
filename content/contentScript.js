@@ -133,18 +133,11 @@ function isUIShowing() {
   return isContainerShowing() || isLoadingShowing();
 }
 
-function hideRoot() {
-  const host = getShadowRoot().host;
-  host.style.top = "-999px";
-  host.style.left = "-999px";
-}
-
 function delay(timeout, func) {
   setTimeout(func, timeout);
 }
 
 function hideAll() {
-  hideRoot();
   hideElement(containerSelector);
   hideElement(loadingSelector);
 }
@@ -174,7 +167,7 @@ function showContainer(targetClientRect = null) {
 
 function adjustPosition(selector, targetClientRect) {
   const element = getShadowRoot().querySelector(selector);
-  const docWidth = document.body.clientWidth;
+  const docWidth = document.documentElement.clientWidth;
   const windowHeight = window.innerHeight;
   const extWidth = element.clientWidth;
   const extHeight = element.clientHeight;
