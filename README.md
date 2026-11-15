@@ -12,7 +12,8 @@ Hover and selection lookups work in both directions by default. Turn on **Skip m
 
 * Chrome web store:  https://chromewebstore.google.com/detail/bingtranslatorx/jjeahpiblnooclghjhjmcdhlmmfpdjkh
 * Edge add-on: https://microsoftedge.microsoft.com/addons/detail/bingtranslatorx/cdhfjnkkjbdaoogiifeajdomiiepijai
-  
+
+[隐私政策 (Privacy Policy)](PRIVACY.md)
 
 ## 报告Bug或建议 (Bug Report or feedback)
 
