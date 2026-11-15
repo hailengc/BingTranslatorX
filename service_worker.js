@@ -1,6 +1,6 @@
 const defaultSetting = {
   enable: true,
-  skipBrowserLanguage: true,
+  skipBrowserLanguage: false,
   hover: {
     enable: true,
     key: "",

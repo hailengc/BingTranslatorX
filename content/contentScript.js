@@ -33,7 +33,7 @@ let extSetting = null;
 const browserLanguage = chrome.i18n.getUILanguage().toLowerCase().split(/[-_]/)[0];
 
 function canTranslateText(text) {
-  if (extSetting.skipBrowserLanguage !== false) {
+  if (extSetting.skipBrowserLanguage === true) {
     // Bing Dictionary translates between English and Chinese. Script checks
     // work for short hover targets, where language detection is unreliable.
     if (browserLanguage === "zh") return /\p{Script=Latin}/u.test(text);

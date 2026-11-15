@@ -227,15 +227,18 @@ async function testInputFocus() {
 }
 
 async function testLanguageFilter() {
+  const filterOn = { skipBrowserLanguage: true };
   const cases = [
     ["zh-CN", {}, "hello", true],
-    ["zh-TW", {}, "你好", false],
+    ["zh-TW", {}, "你好", true],
     ["en-US", {}, "你好", true],
-    ["en-GB", {}, "hello", false],
-    ["fr-CA", {}, "hello", true],
-    ["fr-CA", {}, "你好", true],
-    ["en-US", { skipBrowserLanguage: false }, "hello", true],
-    ["zh-CN", { skipBrowserLanguage: false }, "你好", true],
+    ["en-GB", {}, "hello", true],
+    ["zh-CN", filterOn, "hello", true],
+    ["zh-TW", filterOn, "你好", false],
+    ["en-US", filterOn, "你好", true],
+    ["en-GB", filterOn, "hello", false],
+    ["fr-CA", filterOn, "hello", true],
+    ["fr-CA", filterOn, "你好", true],
   ];
 
   for (const [locale, settings, text, expected] of cases) {
@@ -261,15 +264,13 @@ async function testLanguageFilter() {
   const page = await createPage("en-US");
   page.hover("hello");
   page.tick(350);
-  assert.strictEqual(page.requests.length, 0);
-
-  page.setLanguageFilter(false);
-  page.hover("hello");
-  page.tick(350);
   assert.strictEqual(page.requests[0].request.queryString, "hello");
 
   page.setLanguageFilter(true);
   assert.strictEqual(page.loading.style.display, "none");
+  page.hover("hello");
+  page.tick(350);
+  assert.strictEqual(page.requests.length, 1);
 
   page.setLanguageFilter(false);
   page.hover("hello");

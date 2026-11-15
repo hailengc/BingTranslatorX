@@ -129,7 +129,7 @@ function toggleCheckBox(cb, checked) {
 
 function updateFormWithSetting(setting) {
   toggleCheckBox(cbEnableExt, setting.enable);
-  cbSkipBrowserLanguage.checked = setting.skipBrowserLanguage !== false;
+  cbSkipBrowserLanguage.checked = setting.skipBrowserLanguage === true;
   toggleCheckBox(cbEnableHovering, setting.hover.enable);
   selAuxKey.value = setting.hover.key;
   selBackgroundColor.value = setting.container.backgroundColor;
