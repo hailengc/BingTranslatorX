@@ -90,7 +90,11 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
         destroy() {},
       }),
     },
-    Mustache: { render: (_, { translation }) => translation },
+    Mustache: {
+      parse() {},
+      render: (_, { translation, translationList, message }) =>
+        translation ?? translationList?.[0]?.translation ?? message,
+    },
     setInterval: callback => { intervals.push(callback); return intervals.length; },
   });
   for (const file of ["lib/util.js", "lib/QueryTarget.js", "template/mustacheTemplates.js", "content/contentScript.js"]) {
@@ -217,18 +221,68 @@ async function testInputFocus() {
     assert.strictEqual(page.requests.length, 0);
   }
 
-  {
-    const page = await createPage("zh-CN", { selectionTranslationEnabled: false });
-    page.select("selected text");
+  console.log("Input focus regression tests passed");
+}
+
+function dictionaryResponse(headword, definition) {
+  const entry = {
+    "#headword": { textContent: headword },
+    ".qdef > ul": {
+      children: [{
+        querySelector(selector) {
+          return {
+            ".pos": { textContent: "na." },
+            ".def": { textContent: definition, innerHTML: definition },
+          }[selector];
+        },
+      }],
+    },
+  };
+  return { querySelector: selector => entry[selector] };
+}
+
+async function testPhraseDictionaryFallback() {
+  const phrase = "Short  and sweet";
+  const definition = "扼要的；短而愉快的";
+  const exactEntry = dictionaryResponse("short and sweet", definition);
+  const machineTranslation = { textContent: "简短而甜蜜" };
+  const cases = [
+    { content: exactEntry, expected: definition },
+    { content: exactEntry, setting: undefined, expected: definition },
+    { content: dictionaryResponse("sweet", definition) },
+    { content: dictionaryResponse("short and sweet", " ") },
+    { content: { querySelector: selector => selector.endsWith(".p1-11") ? machineTranslation : null } },
+    { content: null },
+    { status: -1 },
+    { content: exactEntry, beforeResponse: page => page.dispatch("scroll") },
+    { content: exactEntry, beforeResponse: page => page.select("new selection") },
+  ];
+
+  for (const test of cases) {
+    const setting = "setting" in test ? test.setting : false;
+    const page = await createPage("zh-CN", { selectionTranslationEnabled: setting });
+    page.context.DOMParser = class {
+      parseFromString() {
+        return { querySelector: selector => selector === ".content" ? test.content : null };
+      }
+    };
+    page.select(phrase);
     page.dispatch("mouseup");
     page.tick();
-    await new Promise(resolve => setImmediate(resolve));
-    assert.deepStrictEqual(page.translations, [], "selecting a sentence must respect opt-out");
-    assert.strictEqual(page.requests.length, 0);
+    assert.deepStrictEqual(page.requests.map(({ request }) => request.queryString), [phrase]);
     assert.strictEqual(page.loading.style.display, "none");
+    assert.strictEqual(page.container.style.display, "none");
+
+    test.beforeResponse?.(page);
+    page.requests[0].callback({ status: test.status ?? 0, data: "dictionary response" });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepStrictEqual(page.translations, []);
+    assert.strictEqual(page.loading.style.display, "none");
+    assert.strictEqual(page.container.style.display, test.expected ? "block" : "none");
+    assert.strictEqual(page.container.innerHTML, test.expected);
   }
 
-  console.log("Input focus regression tests passed");
+  console.log("Phrase dictionary fallback tests passed");
 }
 
 async function testLanguageFilter() {
@@ -290,6 +344,7 @@ async function testLanguageFilter() {
 
 async function main() {
   await testInputFocus();
+  await testPhraseDictionaryFallback();
   await testLanguageFilter();
 }
 

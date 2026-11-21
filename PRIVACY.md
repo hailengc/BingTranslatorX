@@ -18,7 +18,7 @@ If you enable **Text translation** on a supported browser, longer selections are
 
 BingTranslatorX stores preferences locally in your browser, including whether the extension is enabled, hover and shortcut settings, the language filter, the popup color, and your text translation preference. It also remembers whether it has shown the text translation setup screen.
 
-Open BingTranslatorX from the browser toolbar to view or change these settings. Turn off **Translate when hovering on word** to stop hover-triggered requests. Word selections can still trigger Bing lookups. To stop all lookups, turn off the main **Enable** option or disable the extension in your browser. Turn off **Text translation** to stop on-device translation of longer selections. Uninstalling the extension removes its locally stored preferences.
+Open BingTranslatorX from the browser toolbar to view or change these settings. Turn off **Translate when hovering on word** to stop hover-triggered requests. Selections can still trigger Bing lookups. To stop all lookups, turn off the main **Enable** option or disable the extension in your browser. Turn off **Text translation** to stop on-device translation of longer selections. With that setting off, the extension can send selected text to Bing Dictionary to look for a matching entry, even when no result appears. Uninstalling the extension removes its locally stored preferences.
 
 ## Contact
 

@@ -244,7 +244,11 @@ const queryUrlTestExp = /^\/dict\/search\?.*$/;
 const queryHost = "https://www.bing.com";
 const queryBaseUrl = `${queryHost}/dict/search?mkt=zh-cn&q=`;
 
-function convertFromBingResponseContent(htmlContent, queryString) {
+function normalizeDictionaryTerm(text) {
+  return text.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function convertFromBingResponseContent(htmlContent, queryString, { dictionaryEntryOnly = false } = {}) {
   let convertedContent = null;
   try {
     if (htmlContent === ERROR_NETWORK_ERROR) {
@@ -258,6 +262,9 @@ function convertFromBingResponseContent(htmlContent, queryString) {
       throw new Error(ERROR_INVALID_CONTENT);
     }
     const contentType = getTranslationContentType(contentNode);
+    if (dictionaryEntryOnly && contentType !== TRANSLATION_CONTENT_NORMAL) {
+      return null;
+    }
     if (contentType === TRANSLATION_CONTENT_INVALID) {
       throw new Error(ERROR_INVALID_CONTENT);
     } else if (contentType === TRANSLATION_CONTENT_NORMAL) {
@@ -270,6 +277,12 @@ function convertFromBingResponseContent(htmlContent, queryString) {
 
       // get head
       const headerWord = getTextContent(contentNode.querySelector("#headword"));
+      if (
+        dictionaryEntryOnly &&
+        (!headerWord || normalizeDictionaryTerm(headerWord) !== normalizeDictionaryTerm(queryString))
+      ) {
+        return null;
+      }
 
       // get pronunciation
       const pronNode = contentNode.querySelector(".hd_p1_1");
@@ -286,15 +299,22 @@ function convertFromBingResponseContent(htmlContent, queryString) {
 
       // get translation
       const translationList = [];
-      const ulNode = contentNode.querySelector("ul");
+      const ulNode = contentNode.querySelector(".qdef > ul");
       for (const li of ulNode.children) {
-        const property = getTextContent(li.querySelector(".pos"));
-        const translation = getInnerHTML(li.querySelector(".def"));
+        const definition = li.querySelector(".def");
+        if (dictionaryEntryOnly && !definition?.textContent.trim()) {
+          continue;
+        }
+        const property = getTextContent(li.querySelector(".pos")) || "";
+        const translation = getInnerHTML(definition);
         translationList.push({
           property,
           translation,
           isWeb: property.toLowerCase().indexOf("web") > -1,
         });
+      }
+      if (dictionaryEntryOnly && translationList.length === 0) {
+        return null;
       }
 
       Mustache.parse(standardTemplate); // optional cache, speeds up future uses
@@ -320,6 +340,9 @@ function convertFromBingResponseContent(htmlContent, queryString) {
       });
     }
   } catch (error) {
+    if (dictionaryEntryOnly) {
+      return null;
+    }
     if (error.message === ERROR_NETWORK_ERROR) {
       convertedContent = Mustache.render(noContentTemplate, {
         message: "Sorry, 似乎有网络错误",
@@ -446,12 +469,18 @@ function queryAndShow(queryTarget) {
 
   const queryString = queryTarget.targetString;
   const languages = queryTarget.fromSelection && getSelectionTranslationLanguages(queryString);
-  if (languages) {
+  if (languages && extSetting.selectionTranslationEnabled) {
     translateSelection(queryTarget, languages);
     return;
   }
 
-  showLoading(queryTarget.targetClientRect);
+  const dictionaryEntryOnly = !!languages;
+  if (dictionaryEntryOnly) {
+    // Phrase lookups stay quiet until Bing returns a matching entry.
+    hideAll();
+  } else {
+    showLoading(queryTarget.targetClientRect);
+  }
   chrome.runtime.sendMessage(
     { action: "query", queryString, queryTarget },
     (response) => {
@@ -459,7 +488,15 @@ function queryAndShow(queryTarget) {
         return;
       }
       const lastError = chrome.runtime.lastError;
-      if (queryTarget !== lastQueryTarget || isComposing) {
+      if (!extSetting.enable || queryTarget !== lastQueryTarget || isComposing) {
+        return;
+      }
+      if (
+        dictionaryEntryOnly &&
+        (extSetting.selectionTranslationEnabled ||
+          isSelecting ||
+          window.getSelection()?.toString().trim() !== queryString)
+      ) {
         return;
       }
       const htmlContent =
@@ -468,7 +505,8 @@ function queryAndShow(queryTarget) {
           : ERROR_NETWORK_ERROR;
       const convertedContent = convertFromBingResponseContent(
         htmlContent,
-        queryString
+        queryString,
+        { dictionaryEntryOnly }
       );
       if (convertedContent && updateContainerContent(convertedContent)) {
         showContainer(queryTarget.targetClientRect);
@@ -771,7 +809,11 @@ function init() {
     document.addEventListener(
       "scroll",
       (event) => {
-        hideAll();
+        if (lastQueryTarget.fromSelection) {
+          cancelPendingQuery();
+        } else {
+          hideAll();
+        }
       },
       { passive: true, capture: true, signal }
     );
