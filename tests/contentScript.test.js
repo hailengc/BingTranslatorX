@@ -66,7 +66,11 @@ async function createPage(browserLanguage = "zh-CN", initialSettings = {}) {
     chrome: {
       dom: { openOrClosedShadowRoot: host => closedRoots.get(host) || null },
       i18n: { getUILanguage: () => browserLanguage },
-      runtime: { id: "test-extension", sendMessage: (request, callback) => requests.push({ request, callback }) },
+      runtime: {
+        id: "test-extension",
+        onMessage: { addListener() {} },
+        sendMessage: (request, callback) => requests.push({ request, callback }),
+      },
       storage: { local: {
         get: (_, callback) => callback({
           enable: true, hover: { enable: true, key: "" },

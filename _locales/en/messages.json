@@ -50,6 +50,9 @@
   "translationSetupTitle": {
     "message": "New in BingTranslatorX: Text translation"
   },
+  "translationSetupRefreshHint": {
+    "message": "To use BingTranslatorX on a page you already had open, refresh that page once."
+  },
   "translationSetupDescription": {
     "message": "Translate phrases, sentences, and paragraphs between English and Simplified Chinese. Enabling text translation downloads a language pack to your device. You can change this anytime in Settings."
   },

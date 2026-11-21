@@ -50,6 +50,9 @@
   "translationSetupTitle": {
     "message": "BingTranslatorX 新功能：文本翻译"
   },
+  "translationSetupRefreshHint": {
+    "message": "要在之前打开的网页上使用 BingTranslatorX，刷新页面一次即可。"
+  },
   "translationSetupDescription": {
     "message": "支持短语、句子和段落的英汉互译。开启后，浏览器会将语言包下载到设备。你可以随时在设置中更改此选项。"
   },

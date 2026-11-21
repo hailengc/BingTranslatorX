@@ -878,6 +878,12 @@ function init() {
   }
 }
 
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  if (request.action === "checkContentScript") {
+    sendResponse(true);
+  }
+});
+
 fetchExtSetting().then((setting) => {
   extSetting = setting;
   init();
